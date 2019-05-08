@@ -1,28 +1,15 @@
 {
-  "name": "blockchain_api",
+  "name": "4pjt",
   "version": "1.0.0",
-  "description": "blockchain api for end of year project",
-  "main": "main.js",
+  "description": "api blockchain backend",
+  "main": "app.js",
   "scripts": {
-    "test": "null"
+    "test": "none"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/xavierburzig/blockchain_api.git"
-  },
-  "keywords": [
-    "Node"
-  ],
-  "author": "Xavier BURZIG",
+  "author": "xavier burzig",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/xavierburzig/blockchain_api/issues"
-  },
-  "homepage": "https://github.com/xavierburzig/blockchain_api#readme",
   "dependencies": {
-    "@types/node": "^11.11.7",
-    "chalk": "^2.4.2",
-    "mongoose": "^5.4.20",
-    "object-hash": "^1.3.1"
+    "crypto-js": "^3.1.9-1",
+    "elliptic": "^6.4.1"
   }
 }
