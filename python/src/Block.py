@@ -21,7 +21,6 @@ class Block:
     """ 
         Returns the SHA256 of this block (by processing all the data stored
         inside this block)
-        @returns {string}
     """
     def calculate_hash(self) -> str:
         return str(sha256(self.__previous_hash + self.__timestamp
@@ -31,7 +30,6 @@ class Block:
     """ 
         Starts the mining process on the block. It changes the 'nonce' until the hash
         of the block starts with enough zeros (= difficulty)
-        @param {int} difficulty
     """
     def mine_block(self, difficulty: str) -> None:
         while self.__hash[:difficulty] != '0' * difficulty:
@@ -43,7 +41,6 @@ class Block:
     """ 
         Validates all the transactions inside this block (signature + hash) and
         returns true if everything checks out. False if the block is invalid.
-        @returns {bool}
     """
     def has_valid_transactions(self) -> bool:
         for tx in self.__transactions:

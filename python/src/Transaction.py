@@ -16,7 +16,6 @@ class Transaction:
 
     """
     Creates a SHA256 hash of the transaction
-    @returns {str}
     """
     def calculateHash(self) -> str:
         return str(sha256(self.__from_address + self.__to_address + self.__amount + self.__timestamp))
@@ -26,7 +25,6 @@ class Transaction:
     Signs a transaction with the given signingKey (which is an Elliptic keypair
     object that contains a private key). The signature is then stored inside the
     transaction object and later stored on the blockchain.
-    @param {str} signingKey
     """
     def signTransaction(self, signingKey: str):
         if signingKey.getPublic('hex') != self.__from_address:
@@ -41,7 +39,6 @@ class Transaction:
     """
     Checks if the signature is valid (transaction has not been tampered with).
     It uses the fromAddress as the public key.
-    @returns {bool}
     """
     def is_valid(self) -> bool:
         if self.__from_address is None:
