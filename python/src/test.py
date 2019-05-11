@@ -21,3 +21,6 @@ from ecies import encrypt, decrypt
 #         self.__nonce += 1
 #         self.__hash = self.calculate_hash()
 #     print('Block mined:' + self.hash)
+
+from fastecdsa import keys, curve
+
