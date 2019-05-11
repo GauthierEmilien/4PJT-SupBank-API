@@ -1,7 +1,7 @@
 import datetime
 from hashlib import sha256
 
-from fastecdsa import curve, ecdsa
+from ecdsa import curves, ecdsa
 
 
 class Transaction:
@@ -31,7 +31,7 @@ class Transaction:
             raise Exception('You cannot sign transactions for other wallets!')
 
         hash_tx = self.calculateHash()
-        r, s = ecdsa.sign(hash_tx, signing_priv_key, curve.secp256k1, sha256)
+        r, s = ecdsa.sign(hash_tx, signing_priv_key, curves.SECP256k1, sha256)
         self.__signature = (r, s)
 
     """
@@ -46,7 +46,7 @@ class Transaction:
         if not self.__signature or len(self.__signature) == 0:
             raise Exception('No signature in self transaction')
 
-        return ecdsa.verify(self.__signature, self.calculateHash(), self.__from_address, curve.secp256k1, sha256)
+        return ecdsa.verify(self.__signature, self.calculateHash(), self.__from_address, curves.SECP256k1, sha256)
 
     def get_from_address(self):
         return self.__from_address
