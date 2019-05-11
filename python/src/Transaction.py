@@ -43,7 +43,7 @@ class Transaction:
         if self.__from_address is None:
             return True
 
-        if not self.__signature or self.__signature.length == 0:
+        if not self.__signature or len(self.__signature) == 0:
             raise Exception('No signature in self transaction')
 
         return ecdsa.verify(self.__signature, self.calculateHash(), self.__from_address, curve.secp256k1, sha256)
