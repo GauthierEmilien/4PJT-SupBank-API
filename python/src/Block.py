@@ -6,7 +6,7 @@ https://pypi.org/project/eciespy/#description
 from hashlib import sha256
 import json
 from typing import List
-from Transaction import Transaction
+from .Transaction import Transaction
 
 
 class Block:

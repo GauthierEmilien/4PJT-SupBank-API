@@ -1,8 +1,3 @@
-from ecies.utils import generate_eth_key, generate_key
-from ecies import encrypt, decrypt
-
-
-
 # eth_k = generate_eth_key()
 # prvhex = eth_k.to_hex()
 # pubhex = eth_k.public_key.to_hex()
@@ -22,5 +17,47 @@ from ecies import encrypt, decrypt
 #         self.__hash = self.calculate_hash()
 #     print('Block mined:' + self.hash)
 
-from fastecdsa import keys, curve
+import socketio
 
+# create a Socket.IO server
+sioserv = socketio.Server()
+
+# wrap with a WSGI application
+app = socketio.WSGIApp(sioserv)
+
+
+@sioserv.on('connect')
+def connect(sid, environ):
+    print('connect ', sid)
+
+
+@sioserv.on('disconnect')
+def disconnect(sid):
+    print('disconnect ', sid)
+
+
+sio = socketio.Client()
+sio.connect('http://localhost:8080')
+
+
+@sio.on('connect')
+def on_connect():
+    print('I\'m connected!')
+
+
+@sio.on('message')
+def on_message(data):
+    print('I received a message!')
+
+
+@sio.on('my message')
+def on_message(data):
+    print('I received a custom message!')
+
+
+@sio.on('disconnect')
+def on_disconnect():
+    print('I\'m disconnected!')
+
+
+sio.emit('my message', {'foo': 'bar'})

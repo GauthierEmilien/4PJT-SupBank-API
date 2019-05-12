@@ -1,7 +1,7 @@
 import datetime
 from hashlib import sha256
 
-from ecdsa import curves, ecdsa
+from ecdsa import SigningKey, VerifyingKey, SECP256k1
 
 
 class Transaction:
@@ -26,12 +26,14 @@ class Transaction:
     transaction object and later stored on the blockchain.
     """
 
-    def signTransaction(self, signing_pub_key: str, signing_priv_key: str):
-        if signing_pub_key != self.__from_address:
+    def signTransaction(self, signing_key: SigningKey):
+        pub_key = signing_key.get_verifying_key()
+
+        if pub_key.to_string().hex() != self.__from_address:
             raise Exception('You cannot sign transactions for other wallets!')
 
         hash_tx = self.calculateHash()
-        r, s = ecdsa.sign(hash_tx, signing_priv_key, curves.SECP256k1, sha256)
+        r, s = signing_key.sign(hash_tx, sigencode=SECP256k1, hashfunc=sha256)
         self.__signature = (r, s)
 
     """
@@ -56,3 +58,11 @@ class Transaction:
 
     def get_amount(self):
         return self.__amount
+
+
+sk = SigningKey.generate(curve=SECP256k1)
+vk = sk.get_verifying_key()
+vk_pem = vk.to_pem()
+vk2 = VerifyingKey.from_pem(vk_pem)
+# vk and vk2 are the same key
+print(vk2)
