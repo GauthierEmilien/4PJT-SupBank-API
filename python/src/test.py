@@ -1,5 +1,3 @@
-from ecies.utils import generate_eth_key, generate_key
-from ecies import encrypt, decrypt
 
 
 
@@ -22,5 +20,4 @@ from ecies import encrypt, decrypt
 #         self.__hash = self.calculate_hash()
 #     print('Block mined:' + self.hash)
 
-from fastecdsa import keys, curve
 
