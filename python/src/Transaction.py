@@ -33,8 +33,8 @@ class Transaction:
             raise Exception('You cannot sign transactions for other wallets!')
 
         hash_tx = self.calculateHash()
-        r, s = signing_key.sign(hash_tx, sigencode=SECP256k1, hashfunc=sha256)
-        self.__signature = (r, s)
+        sig = signing_key.sign(hash_tx, sigencode=SECP256k1, hashfunc=sha256)
+        self.__signature = sig
 
     """
     Checks if the signature is valid (transaction has not been tampered with).
@@ -48,7 +48,7 @@ class Transaction:
         if not self.__signature or len(self.__signature) == 0:
             raise Exception('No signature in self transaction')
 
-        return ecdsa.verify(self.__signature, self.calculateHash(), self.__from_address, curves.SECP256k1, sha256)
+        return VerifyingKey.verify(self.__signature, self.calculateHash(), sha256, SECP256k1)
 
     def get_from_address(self):
         return self.__from_address
@@ -58,11 +58,3 @@ class Transaction:
 
     def get_amount(self):
         return self.__amount
-
-
-sk = SigningKey.generate(curve=SECP256k1)
-vk = sk.get_verifying_key()
-vk_pem = vk.to_pem()
-vk2 = VerifyingKey.from_pem(vk_pem)
-# vk and vk2 are the same key
-print(vk2)
