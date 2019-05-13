@@ -2,7 +2,7 @@ import socketio
 from aiohttp import web
 from typing import List
 
-sio = socketio.AsyncServer()
+sio = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
 sio.attach(app)
 
@@ -26,6 +26,11 @@ async def disconnect(sid):
     nodes[:] = [n for n in nodes if n.get('sid') != sid]
     print(nodes)
     await sio.emit('nodes', nodes)
+
+async def index(request):
+    return web.Response(text='bonjour')
+
+app.router.add_get('/', index)
 
 
 if __name__ == '__main__':
