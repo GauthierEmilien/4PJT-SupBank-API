@@ -1,3 +1,2 @@
 python-socketio[client]
 requests
-netifaces

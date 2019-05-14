@@ -1,8 +1,7 @@
 import socketio
-from aiohttp import web
+from aiohttp import web, web_request
 from typing import List
 import netifaces as ni
-
 from PyInquirer import prompt
 
 sio = socketio.AsyncServer(async_mode='aiohttp')
@@ -13,14 +12,11 @@ nodes: List[dict] = []
 
 
 @sio.on('connect')
-def connect(sid, environ):
+async def connect(sid, environ: dict):
     print('connect ', sid)
-
-
-@sio.on('ip-address')
-async def on_ip_address(sid, data: dict):
-    nodes.append({'sid': sid, 'host': data})
-    print(nodes)
+    req: web_request.Request = environ.get('aiohttp.request')
+    ip = req.transport.get_extra_info('peername')[0]
+    nodes.append({'sid': sid, 'host': ip})
     await sio.emit('nodes', nodes)
 
 
@@ -29,13 +25,6 @@ async def disconnect(sid):
     nodes[:] = [n for n in nodes if n.get('sid') != sid]
     print(nodes)
     await sio.emit('nodes', nodes)
-
-
-async def index(request):
-    return web.Response(text='bonjour')
-
-
-app.router.add_get('/', index)
 
 
 def get_ip_addresses() -> List[str]:
@@ -55,6 +44,7 @@ def choose_ip_address(ip_addresses: List[str]) -> str:
     while num < 1 or num > len(ip_addresses):
         num = int(input('Choose your wifi card ip: '))
     return ip_addresses[num - 1]
+
 
 if __name__ == '__main__':
     ip_addresses = get_ip_addresses()
@@ -76,7 +66,6 @@ if __name__ == '__main__':
         ip_server = choose_ip_address(ip_addresses)
 
     print(ip_server)
-
 
     if ip_server:
         print('To deploy server (Ubuntu 18):\n- sudo ufw enable && sudo ufw allow 8000\n')
