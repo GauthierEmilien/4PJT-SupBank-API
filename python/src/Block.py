@@ -2,7 +2,7 @@
 utilisation lib
 https://pypi.org/project/eciespy/#description
 """
-
+from base64 import encode
 from hashlib import sha256
 import json
 from typing import List
@@ -23,15 +23,15 @@ class Block:
         inside this block)
     """
     def calculate_hash(self) -> str:
-        return str(sha256(self.__previous_hash + self.__timestamp
-                          + json.dumps(self.__transactions) + self.__nonce))
+        return str(sha256(str(self.__previous_hash + str(self.__timestamp)
+                          + json.dumps(self.__transactions) + str(self.__nonce)).encode()))
 
 
     """ 
         Starts the mining process on the block. It changes the 'nonce' until the hash
         of the block starts with enough zeros (= difficulty)
     """
-    def mine_block(self, difficulty: str) -> None:
+    def mine_block(self, difficulty: int) -> None:
         while self.__hash[:difficulty] != '0' * difficulty:
             self.__nonce += 1
             self.__hash = self.calculate_hash()

@@ -18,7 +18,7 @@ class Transaction:
     """
 
     def calculateHash(self) -> str:
-        return str(sha256(self.__from_address + self.__to_address + str(self.__amount) + str(self.__timestamp)))
+        return str(sha256(str(self.__from_address.to_string().hex() + self.__to_address + str(self.__amount) + str(self.__timestamp)).encode()))
 
     """
     Signs a transaction with the given signingKey (which is an Elliptic keypair
@@ -28,12 +28,11 @@ class Transaction:
 
     def signTransaction(self, signing_key: SigningKey):
         pub_key = signing_key.get_verifying_key()
-
-        if pub_key.to_string().hex() != self.__from_address:
+        if pub_key.to_string().hex() != self.__from_address.to_string().hex():
             raise Exception('You cannot sign transactions for other wallets!')
 
         hash_tx = self.calculateHash()
-        sig = signing_key.sign(hash_tx, sigencode=SECP256k1, hashfunc=sha256)
+        sig = signing_key.sign(hash_tx.encode(), sigencode=SECP256k1, hashfunc=sha256)
         self.__signature = sig
 
     """
