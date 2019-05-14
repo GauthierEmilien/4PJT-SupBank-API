@@ -1,13 +1,14 @@
+import base64
 import datetime
 from hashlib import sha256
 
-from ecdsa import SigningKey, VerifyingKey, SECP256k1
+from ecdsa import SigningKey, VerifyingKey
 
 
 class Transaction:
 
-    def __init__(self, from_address: str, to_address: str, amount: float):
-        self.__from_address: str = from_address
+    def __init__(self, from_address: VerifyingKey, to_address: str, amount: float):
+        self.__from_address: VerifyingKey = from_address
         self.__to_address: str = to_address
         self.__amount: float = amount
         self.__timestamp = datetime.datetime.now()
@@ -18,7 +19,8 @@ class Transaction:
     """
 
     def calculateHash(self) -> str:
-        return str(sha256(str(self.__from_address.to_string().hex() + self.__to_address + str(self.__amount) + str(self.__timestamp)).encode()))
+        return str(sha256(str(self.__from_address.to_string().hex() + self.__to_address + str(self.__amount) + str(
+            self.__timestamp)).encode()))
 
     """
     Signs a transaction with the given signingKey (which is an Elliptic keypair
@@ -32,8 +34,8 @@ class Transaction:
             raise Exception('You cannot sign transactions for other wallets!')
 
         hash_tx = self.calculateHash()
-        sig = signing_key.sign(hash_tx.encode(), sigencode=SECP256k1, hashfunc=sha256)
-        self.__signature = sig
+        sig = signing_key.sign(hash_tx.encode())
+        self.__signature = sig.hex()
 
     """
     Checks if the signature is valid (transaction has not been tampered with).
@@ -47,7 +49,11 @@ class Transaction:
         if not self.__signature or len(self.__signature) == 0:
             raise Exception('No signature in self transaction')
 
-        return VerifyingKey.verify(self.__signature, self.calculateHash(), sha256, SECP256k1)
+        # try:
+        return self.__from_address.verify(self.__signature, base64.b64encode(self.calculateHash().encode()))
+        # except BadSignatureError:
+        #     print(BadSignatureError)
+        #     return False
 
     def get_from_address(self):
         return self.__from_address
@@ -57,3 +63,9 @@ class Transaction:
 
     def get_amount(self):
         return self.__amount
+
+    # def _default(self, obj):
+    #     return getattr(obj.__class__, "to_json", self._default.default)(obj)
+    # def to_json(self):  # New special method.
+    #     """ Convert to JSON format string representation. """
+    #     return '{"name": "%s"}' % self.get_amount()
