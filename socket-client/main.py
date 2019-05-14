@@ -1,7 +1,5 @@
-import asyncio
 import socketio
-import socket
-import atexit
+import netifaces as ni
 
 ### ASYNC VERSION ###
 # sio = socketio.AsyncClient()
@@ -44,10 +42,8 @@ sio = socketio.Client()
 @sio.on('connect')
 def on_connect():
     print('I\'m connected!')
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
-    print(hostname, ip)
-    sio.emit('ip-address', {'hostname': hostname, 'ip': ip})
+    ip = ni.ifaddresses(ni.interfaces()[-1])[ni.AF_INET][0]['addr']
+    sio.emit('ip-address', {'ip': ip})
 
 
 @sio.on('nodes')
@@ -60,12 +56,13 @@ def on_disconnect():
     print('I\'m disconnected!')
 
 
-def start_client():
-    sio.connect('http://localhost:5000')
+def start_client(ip: str):
+    sio.connect('http://{}:8000'.format(ip))
 
 
 if __name__ == '__main__':
+    ip = str(input('Which ip : '))
     try:
-        start_client()
+        start_client(ip)
     except Exception:
         print('Unable to connect to server')

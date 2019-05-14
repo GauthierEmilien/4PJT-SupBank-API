@@ -1,6 +1,7 @@
 import socketio
 from aiohttp import web
 from typing import List
+import netifaces as ni
 
 sio = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
@@ -34,4 +35,7 @@ app.router.add_get('/', index)
 
 
 if __name__ == '__main__':
-    web.run_app(app, host='localhost', port=5000)
+    ip = ni.ifaddresses(ni.interfaces()[-1])[ni.AF_INET][0]['addr']
+    print('To deploy server (Ubuntu 18):\n- sudo ufw enable && sudo ufw allow 8000\n')
+    print('Server ip to connect :', ip)
+    web.run_app(app, host=ip, port=8000)
