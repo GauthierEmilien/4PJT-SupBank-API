@@ -18,6 +18,7 @@ async def connect(sid, environ: dict):
     ip = req.transport.get_extra_info('peername')[0]
     nodes.append({'sid': sid, 'host': ip})
     print(nodes)
+    await sio.emit('ip', ip, room=sid)
     await sio.emit('nodes', nodes)
 
 
