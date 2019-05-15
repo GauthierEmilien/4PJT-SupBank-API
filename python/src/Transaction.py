@@ -1,26 +1,29 @@
-import base64
 import datetime
 from hashlib import sha256
 
-from ecdsa import SigningKey, VerifyingKey
+from Crypto.PublicKey.ECC import EccKey
+from Crypto.Signature import DSS
+
+from Utils import getPubKeyFromECC
 
 
 class Transaction:
 
-    def __init__(self, from_address: VerifyingKey, to_address: str, amount: float):
-        self.__from_address: VerifyingKey = from_address
+    def __init__(self, from_address: str, to_address: str, amount: float):
+        self.__from_address: str = from_address
         self.__to_address: str = to_address
         self.__amount: float = amount
         self.__timestamp = datetime.datetime.now()
         self.__signature = None
+        self.__signKey = None
 
     """
     Creates a SHA256 hash of the transaction
     """
 
-    def calculateHash(self) -> str:
-        return str(sha256(str(self.__from_address.to_string().hex() + self.__to_address + str(self.__amount) + str(
-            self.__timestamp)).encode()))
+    def calculateHash(self) -> sha256:
+        return sha256(str(
+            self.__from_address + self.__to_address + str(self.__amount) + str(self.__timestamp.timestamp())).encode())
 
     """
     Signs a transaction with the given signingKey (which is an Elliptic keypair
@@ -28,14 +31,17 @@ class Transaction:
     transaction object and later stored on the blockchain.
     """
 
-    def signTransaction(self, signing_key: SigningKey):
-        pub_key = signing_key.get_verifying_key()
-        if pub_key.to_string().hex() != self.__from_address.to_string().hex():
+    def signTransaction(self, signing_key: EccKey):
+        pub_key = getPubKeyFromECC(signing_key.public_key().export_key(format='PEM'))
+        if pub_key != self.__from_address:
             raise Exception('You cannot sign transactions for other wallets!')
 
         hash_tx = self.calculateHash()
-        sig = signing_key.sign(hash_tx.encode())
-        self.__signature = sig.hex()
+
+        # sig = signing_key.sign(hash_tx.encode())
+        # self.__signature = sig.hex()
+        self.__signKey = DSS.new(signing_key, 'fips-186-3')
+        self.__signature = self.__signKey.sign(hash_tx)
 
     """
     Checks if the signature is valid (transaction has not been tampered with).
@@ -49,11 +55,7 @@ class Transaction:
         if not self.__signature or len(self.__signature) == 0:
             raise Exception('No signature in self transaction')
 
-        # try:
-        return self.__from_address.verify(self.__signature, base64.b64encode(self.calculateHash().encode()))
-        # except BadSignatureError:
-        #     print(BadSignatureError)
-        #     return False
+        return DSS.new(self.__signKey, 'fips-186-3').verify(self.calculateHash().encode(), self.__signature)
 
     def get_from_address(self):
         return self.__from_address

@@ -62,18 +62,75 @@
 #
 # sio.emit('my message', {'foo': 'bar'})
 
-from ecdsa import SigningKey, SECP256k1
+# from ecdsa import SigningKey, SECP256k1
+#
+# from python.src.Blockchain import Blockchain
+# from python.src.Transaction import Transaction
+#
+# priv_key = SigningKey.generate(curve=SECP256k1) # uses SECP256k1
+# pub_key = priv_key.get_verifying_key()
+# print('public \n')
+# print(pub_key.to_string().hex() + '\n')
+# print('private \n')
+# print(priv_key.to_string().hex())
+#
+#
+# # From that we can calculate your public key (which doubles as your wallet address)
+# my_wallet_address = pub_key
+# xatomeCoin = Blockchain()
+#
+# # Create a transaction & sign it with your key
+# tx1 = Transaction(my_wallet_address, 'address1', 50)
+# tx1.signTransaction(priv_key)
+# print(tx1)
+# xatomeCoin.add_transaction(tx1)
+#
+# # Mine pending Transaction
+# xatomeCoin.mine_pending_transaction(my_wallet_address)
+#
+# # Create a second transaction & sign it with your key
+# tx2 = Transaction(my_wallet_address, 'address2', 250)
+# tx2.signTransaction(priv_key)
+# print(tx2)
+# xatomeCoin.add_transaction(tx2)
+#
+# # Mine pending Transaction
+# xatomeCoin.mine_pending_transaction(my_wallet_address)
+#
+# print()
+# print("Balance of xavier is : " + str(xatomeCoin.get_balance_of_address(my_wallet_address)))
+# from Crypto.PublicKey import RSA, ECC
+#
+#
+# private_key = RSA.generate(1024)
+# public_key = private_key.publickey()
+# print(private_key.exportKey)
+# print(public_key.export_key().decode())
+#
+# private = ECC.generate(curve='secp256r1')
+#
+# print(private)
+# print(private.export_key(format='Base64'))
 
-from python.src.Blockchain import Blockchain
-from python.src.Transaction import Transaction
+# from Crypto.PublicKey import ECC
+# from Utils import getKeyFromECC
+#
+# key = ECC.generate(curve="secp256r1")
+#
+#
+#
+# print(key.export_key(format='PEM'))
+# print(getKeyFromECC(key.export_key(format='PEM')))
+# print(getKeyFromECC(key.public_key().export_key(format='PEM')))
 
-priv_key = SigningKey.generate(curve=SECP256k1) # uses SECP256k1
-pub_key = priv_key.get_verifying_key()
-print('public \n')
-print(pub_key.to_string().hex() + '\n')
-print('private \n')
-print(priv_key.to_string().hex())
+from Crypto.PublicKey import ECC
+from Utils import getPubKeyFromECC, getPrivKeyFromECC
+from Blockchain import Blockchain
+from Transaction import Transaction
 
+key_pair = ECC.generate(curve="secp256r1")
+pub_key = getPubKeyFromECC(key_pair.public_key().export_key(format='PEM'))
+priv_key = getPrivKeyFromECC(key_pair.export_key(format='PEM'))
 
 # From that we can calculate your public key (which doubles as your wallet address)
 my_wallet_address = pub_key
@@ -81,7 +138,7 @@ xatomeCoin = Blockchain()
 
 # Create a transaction & sign it with your key
 tx1 = Transaction(my_wallet_address, 'address1', 50)
-tx1.signTransaction(priv_key)
+tx1.signTransaction(key_pair)
 print(tx1)
 xatomeCoin.add_transaction(tx1)
 
@@ -90,7 +147,7 @@ xatomeCoin.mine_pending_transaction(my_wallet_address)
 
 # Create a second transaction & sign it with your key
 tx2 = Transaction(my_wallet_address, 'address2', 250)
-tx2.signTransaction(priv_key)
+tx2.signTransaction(key_pair)
 print(tx2)
 xatomeCoin.add_transaction(tx2)
 
@@ -99,3 +156,15 @@ xatomeCoin.mine_pending_transaction(my_wallet_address)
 
 print()
 print("Balance of xavier is : " + str(xatomeCoin.get_balance_of_address(my_wallet_address)))
+from Crypto.PublicKey import RSA, ECC
+
+
+private_key = RSA.generate(1024)
+public_key = private_key.publickey()
+print(private_key.exportKey)
+print(public_key.export_key().decode())
+
+private = ECC.generate(curve='secp256r1')
+
+print(private)
+print(private.export_key(format='Base64'))

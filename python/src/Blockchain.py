@@ -1,5 +1,5 @@
-from .Block import Block
-from .Transaction import Transaction
+from Block import Block
+from Transaction import Transaction
 from typing import List
 from datetime import datetime
 import time
