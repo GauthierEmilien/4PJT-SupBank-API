@@ -17,6 +17,7 @@ async def connect(sid, environ: dict):
     req: web_request.Request = environ.get('aiohttp.request')
     ip = req.transport.get_extra_info('peername')[0]
     nodes.append({'sid': sid, 'host': ip})
+    print(nodes)
     await sio.emit('nodes', nodes)
 
 
