@@ -1,7 +1,9 @@
-from Block import Block
-from Transaction import Transaction
+from firstAppTranscript.Block import Block
+from firstAppTranscript.Transaction import Transaction
 from typing import List
 from datetime import datetime
+from Crypto.PublicKey.RSA import RsaKey
+from Crypto.PublicKey import RSA
 import time
 import json
 
@@ -31,8 +33,8 @@ class Blockchain:
     mining process. It also adds a transaction to send the mining reward to
     the given address.
     """
-    def mine_pending_transaction(self, miningRewardAddress: str) -> None:
-        rewardTx = Transaction(None, miningRewardAddress, self.__miningReward)
+    def mine_pending_transaction(self, mining_reward_address: RsaKey) -> None:
+        rewardTx = Transaction(RSA.generate(1024).publickey(), mining_reward_address, self.__miningReward)
         self.__pendingTransactions.append(rewardTx)
 
         block = Block(int(round(time.time() * 1000)),
@@ -51,11 +53,12 @@ class Blockchain:
     transaction is properly signed.
     """
     def add_transaction(self, transaction: Transaction) -> None:
-        if (not transaction.get_from_address() or not transaction.get_to_address()):
+        if not transaction.get_from_address().export_key().decode() \
+                or not transaction.get_to_address().export_key().decode():
             raise Exception('Transaction must include from and to address')
 
-        if (not transaction.is_valid()):
-            raise Exception('Cannot add invalid transaction to chain')
+        # if (not transaction.is_valid()):
+        #     raise Exception('Cannot add invalid transaction to chain')
 
         self.__pendingTransactions.append(transaction)
 

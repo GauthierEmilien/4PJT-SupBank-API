@@ -2,12 +2,10 @@
 utilisation lib
 https://pypi.org/project/eciespy/#description
 """
-from base64 import encode
-from hashlib import sha256
-import json
-from typing import List
-from Transaction import Transaction
 
+from typing import List
+from firstAppTranscript.Transaction import Transaction
+from hashlib import sha256
 
 class Block:
     def __init__(self, timestamp: int, transactions: List[Transaction], previous_hash: str = ''):
@@ -23,8 +21,9 @@ class Block:
     """
 
     def calculate_hash(self) -> str:
-        return str(sha256(str(self.__previous_hash + str(self.__timestamp)
-                              + json.dumps(self.__transactions) + str(self.__nonce)).encode()))
+        data = str(self.__previous_hash) + str(self.__timestamp) + str(self.__transactions) + str(self.__nonce)
+
+        return str(sha256(data.encode()))
 
     """ 
         Starts the mining process on the block. It changes the 'nonce' until the hash
@@ -32,10 +31,17 @@ class Block:
     """
 
     def mine_block(self, difficulty: int) -> None:
-        while self.__hash[:difficulty] != '0' * difficulty:
+        temp = "0"
+        while self.__hash.encode('utf-8').hex()[0:difficulty] != '0' * difficulty:
             self.__nonce += 1
-            self.__hash = self.calculate_hash()
-        print('Block mined:' + self.__hash)
+            # il sort pas de la
+            # leZero = str(b'0').encode('utf-8').hex()
+            self.__hash = self.calculate_hash().encode('utf-8').hex()
+
+            print('Block mined:' + self.__hash.encode('utf-8').hex())
+
+
+
 
     """ 
         Validates all the transactions inside this block (signature + hash) and
