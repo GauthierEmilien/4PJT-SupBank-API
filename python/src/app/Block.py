@@ -1,21 +1,20 @@
 import hashlib
 
-
 class Block:
-    def __init__(self, timeStamp, trans, previousBlock=''):
-        self.timeStamp = timeStamp
-        self.trans = trans
-        self.previousBlock = previousBlock
-        self.difficultyIncrement = 0
-        self.hash = self.calculateHash(trans, timeStamp, self.difficultyIncrement)
+    def __init__(self, time_stamp, transactions, previous_block=''):
+        self.time_stamp = time_stamp
+        self.transactions = transactions
+        self.previous_block = previous_block
+        self.nonce = 0
+        self.hash = self.calculate_hash(transactions, str(time_stamp), self.nonce)
 
-    def calculateHash(self, data, timeStamp, difficultyIncrement):
-        data = str(str(data) + str(timeStamp) + str(difficultyIncrement)).encode()
+    def calculate_hash(self, data, time_stamp, nonce):
+        data = str(str(data) + str(time_stamp) + str(nonce)).encode()
         hash = hashlib.sha256(data)
         return hash.hexdigest()
 
-    def mineBlock(self, difficulty):
-        difficultyCheck = "9" * difficulty
-        while self.hash[:difficulty] != difficultyCheck:
-            self.hash = self.calculateHash(self.trans, self.timeStamp, self.difficultyIncrement)
-            self.difficultyIncrement = self.difficultyIncrement + 1
+    def mine_blocks(self, difficulty):
+        difficulty_check = "9" * difficulty
+        while self.hash[:difficulty] != difficulty_check:
+            self.hash = self.calculate_hash(self.transactions, str(self.time_stamp), self.nonce)
+            self.nonce = self.nonce + 1
