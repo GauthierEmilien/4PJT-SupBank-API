@@ -22,8 +22,8 @@ class Client(Thread):
             try:
                 self.__sio.connect('http://{}:8000'.format(self.__server_ip))
                 if self.__is_node:
-                    print('emit test')
-                    self.__sio.emit('test', 'salut salut ({})'.format(self.__server_ip), callback=self.__disconnect)
+                    print('\nEMIT TO => {}'.format(self.__server_ip))
+                    self.__sio.emit('test', 'chuis trop bon ({})'.format(self.__server_ip), callback=self.__disconnect)
             except Exception as e:
                 print('error => {} (server ip : {})'.format(e, self.__server_ip))
 

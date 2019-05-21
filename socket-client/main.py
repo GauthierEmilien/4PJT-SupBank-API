@@ -13,17 +13,16 @@ lock = Lock()
 
 async def index(request):
     lock.acquire()
+    threads = []
     for node in Client.nodes_info:
-        print(Client.connected_nodes)
-        print(node.get('host'), node.get('host') != node_ip and next(
-                (i for i, d in enumerate(Client.connected_nodes) if node.get('host') in d), False))
         if node.get('host') != node_ip:
-            co = Client(node.get('host'), is_node=True)
-            print('client start')
-            co.start()
-            co.join()
+            threads.append(Client(node.get('host'), is_node=True))
+            threads[-1].start()
+
+    for t in threads:
+        t.join()
     lock.release()
-    return web.Response(text="bonjour")
+    return web.Response(text="Message sent to all connected nodes")
 
 
 @server.on('connect')
