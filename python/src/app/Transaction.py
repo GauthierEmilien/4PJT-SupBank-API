@@ -32,5 +32,7 @@ class Transaction:
             return False
 
     def __str__(self):
-        print('{}'.format(self.__from_wallet, self.__to_wallet, self.__amount))
         return '{}'.format(self.__from_wallet, self.__to_wallet, self.__amount)
+
+    def __dict__(self):
+        return {'from_wallet': self.__from_wallet.hex(), 'to_wallet': self.__to_wallet.hex(), 'amount': self.__amount}

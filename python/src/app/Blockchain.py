@@ -2,20 +2,21 @@ import datetime
 import json
 from Transaction import Transaction
 from Block import Block
+from typing import List
 
 
 class Blockchain:
     def __init__(self):
-        self.__chain = [self.__create_genesis_block()]
-        self.__difficulty = 6
-        self.__pending_transaction = []
+        self.__chain: List[Block] = [self.__create_genesis_block()]
+        self.__difficulty: int = 4
+        self.__pending_transaction: List[Transaction] = []
         self.__reward = 10
 
-    def __create_genesis_block(self):
+    def __create_genesis_block(self) -> Block:
         genesis_block = Block(str(datetime.datetime.now()), [], "I am the Genesis Block")
         return genesis_block
 
-    def __get_last_block(self):
+    def __get_last_block(self) -> Block:
         return self.__chain[len(self.__chain) - 1]
 
     def mine_pending_trans(self, miner_reward_address):
@@ -27,7 +28,7 @@ class Blockchain:
         print("Previous Block's Hash: " + new_block.get_previous_block())
         test_block = []
         for trans in new_block.get_transactions():
-            temp = json.dumps(trans.__dict__)
+            temp = json.dumps(trans.__dict__())
             test_block.append(temp)
         print(test_block)
 
@@ -39,7 +40,7 @@ class Blockchain:
         self.__pending_transaction.append(reward_trans)
         self.__pending_transaction = []
 
-    def is_chain_valid(self):
+    def is_chain_valid(self) -> str:
         for x in range(1, len(self.__chain)):
             current_block = self.__chain[x]
             previous_block = self.__chain[x - 1]
@@ -50,10 +51,10 @@ class Blockchain:
                 return "The Chain is not valid!"
         return "The Chain is valid and secure"
 
-    def create_transaction(self, transaction):
+    def create_transaction(self, transaction: Transaction):
         self.__pending_transaction.append(transaction)
 
-    def get_balance(self, wallet_address):
+    def get_balance(self, wallet_address) -> int:
         balance = 0
         for block in self.__chain:
             if block.get_previous_block() == "":
