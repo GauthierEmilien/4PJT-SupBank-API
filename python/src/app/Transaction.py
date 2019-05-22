@@ -1,6 +1,7 @@
-from Cryptodome.Signature import pkcs1_15
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
+from Cryptodome.Signature import pkcs1_15
+
 
 class Transaction:
     def __init__(self, from_wallet, to_wallet, amount):
