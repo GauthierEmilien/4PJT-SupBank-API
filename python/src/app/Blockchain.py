@@ -4,11 +4,10 @@ from Transaction import Transaction
 from Block import Block
 from typing import List
 
-
 class Blockchain:
     def __init__(self):
         self.__chain: List[Block] = [self.__create_genesis_block()]
-        self.__difficulty: int = 4
+        self.__difficulty: int = 5
         self.__pending_transaction: List[Transaction] = []
         self.__reward = 10
 
@@ -22,6 +21,11 @@ class Blockchain:
     def mine_pending_trans(self, miner_reward_address):
         # in reality not all of the pending transaction go into the block the miner gets to pick which one to mine
         new_block = Block(str(datetime.datetime.now()), self.__pending_transaction)
+
+        for trans in new_block.get_transactions():
+            if not trans.veriry():
+                new_block.remove_transaction(trans)
+
         new_block.mine_blocks(self.__difficulty)
         new_block.set_previous_block(self.__get_last_block().get_hash())
 

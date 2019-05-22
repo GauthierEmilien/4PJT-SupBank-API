@@ -3,9 +3,9 @@ from Transaction import Transaction
 from typing import List
 
 class Block:
-    def __init__(self, time_stamp, transactions, previous_block=''):
+    def __init__(self, time_stamp, transactions: List[Transaction], previous_block=''):
         self.__time_stamp = time_stamp
-        self.__transactions = transactions
+        self.__transactions: List[Transaction] = transactions
         self.__previous_block = previous_block
         self.__nonce = 0
         self.__hash: str = self.__calculate_hash()
@@ -23,6 +23,10 @@ class Block:
 
     def get_transactions(self) -> List[Transaction]:
         return self.__transactions
+
+    def remove_transaction(self, transaction: Transaction):
+        self.__transactions.remove(transaction)
+        print('removed transactions', self.__transactions)
 
     def get_hash(self) -> str:
         return self.__hash
