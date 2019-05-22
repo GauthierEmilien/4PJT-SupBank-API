@@ -2,6 +2,8 @@ from Client import Client
 import socketio
 from aiohttp import web, web_request
 from threading import Lock
+from Cryptodome.PublicKey import RSA
+from Transaction import Transaction
 
 server = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
@@ -10,14 +12,22 @@ node_ip = ''
 
 lock = Lock()
 
+eric_key = RSA.generate(1024)
+alex_key = RSA.generate(1024)
 
+
+# On button click
 async def index(request):
+    transaction = Transaction(eric_key.publickey().export_key('DER'), alex_key.publickey().export_key('DER'), 20)
+    transaction.sign(eric_key)
+
     lock.acquire()
     threads = []
     for node in Client.nodes_info:
         if node.get('host') != node_ip:
             threads.append(Client(node.get('host'), is_node=True))
             threads[-1].start()
+            threads[-1].send_transaction(transaction)
 
     for t in threads:
         t.join()
@@ -46,9 +56,9 @@ async def disconnect(sid):
     lock.release()
 
 
-@server.on('test')
-async def on_test(sid, text):
-    print('text from {} => {}'.format(sid, text))
+@server.on('transaction')
+async def on_test(sid, transaction):
+    print('text from {} => {}'.format(sid, transaction))
 
 
 app.router.add_get('/', index)

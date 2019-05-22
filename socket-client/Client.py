@@ -1,6 +1,7 @@
 from threading import Thread, RLock
 import socketio
 from typing import List
+from Transaction import Transaction
 
 lock = RLock()
 
@@ -21,11 +22,12 @@ class Client(Thread):
         if self.__server_ip:
             try:
                 self.__sio.connect('http://{}:8000'.format(self.__server_ip))
-                if self.__is_node:
-                    print('\nEMIT TO => {}'.format(self.__server_ip))
-                    self.__sio.emit('test', 'chuis trop bon ({})'.format(self.__server_ip), callback=self.__disconnect)
             except Exception as e:
                 print('error => {} (server ip : {})'.format(e, self.__server_ip))
+
+    def send_transaction(self, transaction: Transaction):
+        # print('\nEMIT TO => {}'.format(Client.connected_nodes))
+        self.__sio.emit('transaction', transaction.__dict__(), callback=self.__disconnect)
 
     def __disconnect(self):
         self.__sio.disconnect()
