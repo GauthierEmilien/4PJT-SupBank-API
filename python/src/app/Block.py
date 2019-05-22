@@ -1,20 +1,34 @@
 import hashlib
+from Transaction import Transaction
+from typing import List
 
 class Block:
     def __init__(self, time_stamp, transactions, previous_block=''):
-        self.time_stamp = time_stamp
-        self.transactions = transactions
-        self.previous_block = previous_block
-        self.nonce = 0
-        self.hash = self.calculate_hash(transactions, str(time_stamp), self.nonce)
+        self.__time_stamp = time_stamp
+        self.__transactions = transactions
+        self.__previous_block = previous_block
+        self.__nonce = 0
+        self.__hash: str = self.__calculate_hash()
 
-    def calculate_hash(self, data, time_stamp, nonce):
-        data = str(str(data) + str(time_stamp) + str(nonce)).encode()
+    def __calculate_hash(self) -> str:
+        data = (str(self.__transactions) + str(self.__time_stamp) + str(self.__nonce)).encode()
         hash = hashlib.sha256(data)
         return hash.hexdigest()
 
-    def mine_blocks(self, difficulty):
-        difficulty_check = "9" * difficulty
-        while self.hash[:difficulty] != difficulty_check:
-            self.hash = self.calculate_hash(self.transactions, str(self.time_stamp), self.nonce)
-            self.nonce = self.nonce + 1
+    def mine_blocks(self, difficulty: int) -> None:
+        difficulty_check = "0" * difficulty
+        while self.__hash[:difficulty] != difficulty_check:
+            self.__hash = self.__calculate_hash()
+            self.__nonce += 1
+
+    def get_transactions(self) -> List[Transaction]:
+        return self.__transactions
+
+    def get_hash(self) -> str:
+        return self.__hash
+
+    def get_previous_block(self) -> str:
+        return self.__previous_block
+
+    def set_previous_block(self, hash: str):
+        self.__previous_block = hash
