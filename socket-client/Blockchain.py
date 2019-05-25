@@ -18,13 +18,17 @@ class Blockchain:
     def __get_last_block(self) -> Block:
         return self.__chain[len(self.__chain) - 1]
 
-    def mine_pending_trans(self, miner_reward_address):
+    def mine_pending_trans(self, miner_reward_address: bytes):
         # in reality not all of the pending transaction go into the block the miner gets to pick which one to mine
         new_block = Block(str(datetime.datetime.now()), self.__pending_transaction)
 
         for trans in new_block.get_transactions():
-            if not trans.veriry():
+            if not trans.verify():
                 new_block.remove_transaction(trans)
+
+        if len(new_block.get_transactions()) < 1:
+            print('No valid transaction to add in block')
+            return
 
         new_block.mine_blocks(self.__difficulty)
         new_block.set_previous_block(self.__get_last_block().get_hash())
@@ -40,7 +44,7 @@ class Blockchain:
         print("Block's Hash: " + new_block.get_hash())
         print("Block added")
 
-        reward_trans = Transaction("System", miner_reward_address, self.__reward)
+        reward_trans = Transaction(b"System", miner_reward_address, self.__reward)
         self.__pending_transaction.append(reward_trans)
         self.__pending_transaction = []
 
@@ -55,10 +59,10 @@ class Blockchain:
                 return "The Chain is not valid!"
         return "The Chain is valid and secure"
 
-    def create_transaction(self, transaction: Transaction):
+    def add_transaction(self, transaction: Transaction):
         self.__pending_transaction.append(transaction)
 
-    def get_balance(self, wallet_address) -> int:
+    def get_balance(self, wallet_address: bytes) -> int:
         balance = 0
         for block in self.__chain:
             if block.get_previous_block() == "":
@@ -70,3 +74,8 @@ class Blockchain:
                 if transaction.get_to_wallet() == wallet_address:
                     balance += transaction.get_amount()
         return balance
+
+    def get_pending_transaction(self) -> List[Transaction]:
+        return self.__pending_transaction
+
+

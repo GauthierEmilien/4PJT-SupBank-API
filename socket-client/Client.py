@@ -26,7 +26,7 @@ class Client(Thread):
                 print('error => {} (server ip : {})'.format(e, self.__server_ip))
 
     def send_transaction(self, transaction: Transaction):
-        # print('\nEMIT TO => {}'.format(Client.connected_nodes))
+        print('\nSEND TRANSACTION => {}'.format(transaction.__dict__()))
         self.__sio.emit('transaction', transaction.__dict__(), callback=self.__disconnect)
 
     def __disconnect(self):
