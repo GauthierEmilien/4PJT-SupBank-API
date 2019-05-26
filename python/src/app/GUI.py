@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
 
+
 # TODO: Gerer les bonnes actions sur les boutons
 # TODO: Passer sous class ?
 # TODO: Améliorer le responsive
@@ -240,32 +241,29 @@ Création du tab "Portefeuille"
 tab_wallet = Frame(tab_control)
 tab_wallet.pack(expand=1, fill="both", side=LEFT)
 
-tab_wallet.grid_configure()
-# Grid.rowconfigure(tab_wallet, 0, weight=1)
-# Grid.columnconfigure(tab_wallet, 0, weight=1)
-
-# TODO: Améliorer l'affichage des clés
 # Charger une clé privée
 l_private_wallet_key = Label(tab_wallet, text='Clé privée')
 l_private_wallet_key.grid(row=0, column=0, sticky=N + S + E + W)
-private_wallet_key = Entry(tab_wallet, text='')
+private_wallet_key = Text(tab_wallet, height=5)
 private_wallet_key.grid(row=1, column=0, sticky=N + S + E + W)
 button_open_private = Button(tab_wallet, text='Ouvrir une clé privée',
                              command=lambda: getPrivateKeyFile(private_wallet_key))
-button_open_private.grid(row=1, column=1, sticky=N + S + E + W)
+button_open_private.grid(row=1, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
 # Montant de mon Portefeuille
-amount_wallet = Label(tab_wallet, text='Portefeuille')
-amount_wallet.grid(row=0, column=2, sticky=N + S + E + W)
+l_amount_wallet = Label(tab_wallet, text='Portefeuille', width=20)
+l_amount_wallet.grid(row=0, column=2, sticky=N + S + E + W)
+amount_wallet = Label(tab_wallet, text='200')
+amount_wallet.grid(row=1, column=2, sticky=N + S + E + W)
 
 # Charger la clé public du destinataire
 l_public_key = Label(tab_wallet, text='Clé public destinataire')
 l_public_key.grid(row=3, column=0, sticky=N + S + E + W)
-public_key = Entry(tab_wallet, text='')
+public_key = Text(tab_wallet, height=5)
 public_key.grid(row=4, column=0, sticky=N + S + E + W)
 
 button_open_public = Button(tab_wallet, text='Ouvrir une clé public', command=lambda: getPublicKeyFile(public_key))
-button_open_public.grid(row=4, column=1, sticky=N + S + E + W)
+button_open_public.grid(row=4, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
 # Montant de la transaction
 l_amount_transaction = Label(tab_wallet, text='Montant de la transaction')
@@ -274,13 +272,14 @@ amount_transaction = Entry(tab_wallet, text='')
 amount_transaction.grid(row=7, column=0, sticky=N + S + E + W)
 
 # Effectuer la transaction
-button_valid_transaction = Button(tab_wallet, text='Valider la transaction',
+button_valid_transaction = Button(tab_wallet, text='Valider la transaction', height=2,
                                   command=lambda: createTransaction(private_wallet_key, public_key, amount_transaction))
-button_valid_transaction.grid(row=6, column=2, rowspan=2, sticky=N + S + E + W)
+button_valid_transaction.grid(row=7, column=1, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
 
 # Log de mes transactions en cours de traitement
 w_logger_frame = VerticalScrolledFrame(tab_wallet, height=50)
 w_logger_frame.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
+tab_wallet.grid_rowconfigure(9, weight=1)
 
 tab_control.add(tab_wallet, text='Wallet')
 tab_control.pack(expand=1, fill="both", side=LEFT)
@@ -288,32 +287,30 @@ tab_control.pack(expand=1, fill="both", side=LEFT)
 """
 Initialisation de la grille (pour le redimentionnement)
 """
-grid_size = tab_wallet.grid_size()
-# set column size
-for i in range(grid_size[0]):
-    tab_wallet.grid_columnconfigure(i, weight=1)
-# set row size
-for i in range(grid_size[1]):
-    tab_wallet.grid_rowconfigure(i, weight=1)
+tab_wallet.grid_columnconfigure(0, weight=4)
+tab_wallet.grid_columnconfigure(1, weight=2)
+tab_wallet.grid_columnconfigure(2, weight=2)
 
 
-def getPrivateKeyFile(entryfield: Entry):
+def getPrivateKeyFile(entry_field: Text):
     filepath = askopenfilename(title="Ouvrir une clé privée", filetypes=[('pem files', '.pem'), ('all files', '*')])
     if filepath:
         with open(filepath) as file:
             value = file.read()
-            entryfield.insert(0, value)
+            entry_field.delete('1.0', END)
+            entry_field.insert(INSERT, value)
 
 
-def getPublicKeyFile(entryfield: Entry):
+def getPublicKeyFile(entry_field: Text):
     filepath = askopenfilename(title="Ouvrir uneclé public", filetypes=[('pub files', '.pub'), ('all files', '*')])
     if filepath:
         with open(filepath) as file:
             value = file.read()
-            entryfield.insert(0, value)
+            entry_field.delete('1.0', END)
+            entry_field.insert(INSERT, value)
 
 
-def createTransaction(private_key: Entry, public_key: Entry, amount: Entry):
+def createTransaction(private_key: Text, public_key: Text, amount: Entry):
     wLogger('Création de la transaction')
     pass
 
