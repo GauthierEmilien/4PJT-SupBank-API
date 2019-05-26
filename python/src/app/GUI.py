@@ -178,6 +178,41 @@ class VerticalScrolledFrame(Frame):
         canvas.bind('<Configure>', _configure_canvas)
 
 
+class TextAndScrollBar(Text):
+
+    def __init__(self, parent, *args, **kw):
+        Text.__init__(self, parent, *args, **kw)
+        scrollbar = Scrollbar(parent)
+        scrollbar.pack(side=RIGHT, fill=Y)
+        self.configure(yscrollcommand=scrollbar.set)
+        self.pack(fill=BOTH)
+
+
+class Logger(Frame):
+
+    def __init__(self, parent, *args, **kw):
+        Frame.__init__(self, parent, *args, **kw)
+        self.__loggerText = TextAndScrollBar(self, state='disabled', height=8)
+        self.__loggerText.tag_config("log", foreground="black")
+        self.__loggerText.tag_config("warning", foreground="orange")
+        self.__loggerText.tag_config("error", foreground="red")
+        # self.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
+
+    def __commonLog(self, log: str, color: str):
+        self.__loggerText.config(state=NORMAL)
+        self.__loggerText.insert(END, log + '\n', color)
+        self.__loggerText.config(state=DISABLED)
+
+    def log(self, log: str):
+        self.__commonLog(log, 'log')
+
+    def warning(self, log: str):
+        self.__commonLog(log, 'warning')
+
+    def error(self, log: str):
+        self.__commonLog(log, 'error')
+
+
 """
 Création de la fenêtre
 """
@@ -198,41 +233,52 @@ Création du tab "blockchaine"
 """
 tab_blockchaine = Frame(tab_control, width=300, height=300, background="white")  # Create a tab
 tab_blockchaine.pack()
-# TODO: passer de pack à grid
+
 # Mining logs
-m_logger_frame = VerticalScrolledFrame(tab_blockchaine, height=75)
-m_logger_frame.pack(side=BOTTOM, fill=X, expand=False)
-m_logger_frame.pack_propagate(False)
+mining_logger = Logger(tab_blockchaine)
+mining_logger.grid(row=10, column=0, columnspan=10, sticky=S + E + W)
+tab_blockchaine.grid_rowconfigure(10, weight=2)
 
 # Mining actions
 buttonStartMining = Button(tab_blockchaine, text="Start mining", command=lambda: buttonStartMiningAction())
-buttonStartMining.pack(side=LEFT, padx=10, pady=5)
+buttonStartMining.grid(row=0, column=0, rowspan=2, padx=5, pady=5, sticky=N + S + E + W)
 buttonStopMining = Button(tab_blockchaine, text="Stop mining", command=lambda: buttonStopMiningAction())
 
 # Pending transactions
-label = Label(tab_blockchaine, text='Pending transaction', background='red', anchor=CENTER)
-label.pack(side=RIGHT, padx=5, pady=5)
-label = Label(tab_blockchaine, text='Block généré', background='red', anchor=CENTER)
-label.pack(side=RIGHT, padx=5, pady=5)
+label_pending = Label(tab_blockchaine, text='Pending transaction', background='red', anchor=CENTER)
+label_pending.grid(row=0, column=1, padx=5, pady=5, sticky=N + S + E + W)
+pending_transactions_frame = Frame(tab_blockchaine)
+pending_transactions_frame.grid(row=1, column=1, rowspan=8, padx=5, pady=5, sticky=N + S + E + W)
+pending_transactions = TextAndScrollBar(pending_transactions_frame, state='disabled')
+
+# Generated blocks
+label_blocks = Label(tab_blockchaine, text='Block généré', background='red', anchor=CENTER)
+label_blocks.grid(row=0, column=2, padx=5, pady=5, sticky=N + S + E + W)
+generated_blocks_frame = Frame(tab_blockchaine)
+generated_blocks_frame.grid(row=1, column=2, rowspan=8, padx=5, pady=5, sticky=N + S + E + W)
+generated_blocks = TextAndScrollBar(generated_blocks_frame, state='disabled')
 
 tab_control.add(tab_blockchaine, text='BlockChain')
 tab_control.pack(expand=1, fill="both", side=LEFT)
 
+"""
+Initialisation de la grille (pour le redimentionnement)
+"""
+tab_blockchaine.grid_columnconfigure(0, weight=4)
+tab_blockchaine.grid_columnconfigure(1, weight=2)
+tab_blockchaine.grid_columnconfigure(2, weight=2)
+
 
 def buttonStartMiningAction():
-    mLogger('Mining in progress')
-    buttonStartMining.forget()
-    buttonStopMining.pack(side=LEFT, padx=5, pady=5)
+    mining_logger.log('Mining in progress')
+    buttonStartMining.grid_forget()
+    buttonStopMining.grid(row=0, column=0, rowspan=2, padx=5, pady=5, sticky=N + S + E + W)
 
 
 def buttonStopMiningAction():
-    mLogger('Stop Mining')
-    buttonStopMining.forget()
-    buttonStartMining.pack(side=LEFT, padx=5, pady=5)
-
-
-def mLogger(log: str):
-    Label(m_logger_frame.interior, text=log).pack(side=BOTTOM)
+    mining_logger.log('Stop Mining')
+    buttonStopMining.grid_forget()
+    buttonStartMining.grid(row=0, column=0, rowspan=2, padx=5, pady=5, sticky=N + S + E + W)
 
 
 """
@@ -277,13 +323,8 @@ button_valid_transaction = Button(tab_wallet, text='Valider la transaction', hei
 button_valid_transaction.grid(row=7, column=1, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
 
 # Log de mes transactions en cours de traitement
-logs_view = Frame(tab_wallet)
-scrollbar = Scrollbar(logs_view)
-scrollbar.pack(side=RIGHT, fill=Y)
-w_logger_frame = Text(logs_view, state='disabled', height=5, yscrollcommand=scrollbar.set)
-w_logger_frame.pack(fill=BOTH)
-logs_view.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
-
+wallet_logger = Logger(tab_wallet)
+wallet_logger.grid(row=9, column=0, columnspan=3, sticky=S + E + W)
 tab_wallet.grid_rowconfigure(9, weight=1)
 
 tab_control.add(tab_wallet, text='Wallet')
@@ -316,15 +357,11 @@ def getPublicKeyFile(entry_field: Text):
 
 
 def createTransaction(private_key: Text, public_key: Text, amount: Entry):
-    wLogger('Création de la transaction')
+    wallet_logger.log('Création de la transaction')
+    wallet_logger.error('Création de la transaction')
+    wallet_logger.warning('Création de la transaction')
+    wallet_logger.log('Création de la transaction')
     pass
-
-
-def wLogger(log: str):
-    # Label(w_logger_frame.interior, text=log).pack(side=BOTTOM)
-    w_logger_frame.config(state=NORMAL)
-    w_logger_frame.insert(END, log + '\n')
-    w_logger_frame.config(state=DISABLED)
 
 
 fenetre.mainloop()
