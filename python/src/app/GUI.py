@@ -277,8 +277,13 @@ button_valid_transaction = Button(tab_wallet, text='Valider la transaction', hei
 button_valid_transaction.grid(row=7, column=1, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
 
 # Log de mes transactions en cours de traitement
-w_logger_frame = VerticalScrolledFrame(tab_wallet, height=50)
-w_logger_frame.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
+logs_view = Frame(tab_wallet)
+scrollbar = Scrollbar(logs_view)
+scrollbar.pack(side=RIGHT, fill=Y)
+w_logger_frame = Text(logs_view, state='disabled', height=5, yscrollcommand=scrollbar.set)
+w_logger_frame.pack(fill=BOTH)
+logs_view.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
+
 tab_wallet.grid_rowconfigure(9, weight=1)
 
 tab_control.add(tab_wallet, text='Wallet')
@@ -316,7 +321,10 @@ def createTransaction(private_key: Text, public_key: Text, amount: Entry):
 
 
 def wLogger(log: str):
-    Label(w_logger_frame.interior, text=log).pack(side=BOTTOM)
+    # Label(w_logger_frame.interior, text=log).pack(side=BOTTOM)
+    w_logger_frame.config(state=NORMAL)
+    w_logger_frame.insert(END, log + '\n')
+    w_logger_frame.config(state=DISABLED)
 
 
 fenetre.mainloop()
