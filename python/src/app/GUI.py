@@ -131,53 +131,6 @@ class GUI:
 
 ###########
 
-class VerticalScrolledFrame(Frame):
-    """A pure Tkinter scrollable frame that actually works!
-    * Use the 'interior' attribute to place widgets inside the scrollable frame
-    * Construct and pack/place/grid normally
-    * This frame only allows vertical scrolling
-    """
-
-    def __init__(self, parent, *args, **kw):
-        Frame.__init__(self, parent, *args, **kw)
-
-        # create a canvas object and a vertical scrollbar for scrolling it
-        vscrollbar = Scrollbar(self, orient=VERTICAL)
-        vscrollbar.pack(fill=Y, side=RIGHT, expand=FALSE)
-        canvas = Canvas(self, bd=0, highlightthickness=0,
-                        yscrollcommand=vscrollbar.set)
-        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
-        vscrollbar.config(command=canvas.yview)
-
-        # reset the view
-        canvas.xview_moveto(0)
-        canvas.yview_moveto(0)
-
-        # create a frame inside the canvas which will be scrolled with it
-        self.interior = interior = Frame(canvas)
-        interior_id = canvas.create_window(0, 0, window=interior,
-                                           anchor=NW)
-
-        # track changes to the canvas and frame width and sync them,
-        # also updating the scrollbar
-        def _configure_interior(event):
-            # update the scrollbars to match the size of the inner frame
-            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
-            canvas.config(scrollregion="0 0 %s %s" % size)
-            if interior.winfo_reqwidth() != canvas.winfo_width():
-                # update the canvas's width to fit the inner frame
-                canvas.config(width=interior.winfo_reqwidth())
-
-        interior.bind('<Configure>', _configure_interior)
-
-        def _configure_canvas(event):
-            if interior.winfo_reqwidth() != canvas.winfo_width():
-                # update the inner frame's width to fill the canvas
-                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
-
-        canvas.bind('<Configure>', _configure_canvas)
-
-
 class TextAndScrollBar(Text):
 
     def __init__(self, parent, *args, **kw):
@@ -296,11 +249,11 @@ button_open_private = Button(tab_wallet, text='Ouvrir une clé privée',
                              command=lambda: getPrivateKeyFile(private_wallet_key))
 button_open_private.grid(row=1, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
-# Montant de mon Portefeuille
-l_amount_wallet = Label(tab_wallet, text='Portefeuille', width=20)
-l_amount_wallet.grid(row=0, column=2, sticky=N + S + E + W)
-amount_wallet = Label(tab_wallet, text='200')
-amount_wallet.grid(row=1, column=2, sticky=N + S + E + W)
+# Générer une paire de clé
+l_key_gen = Label(tab_wallet, text='Générer une paire de clé', width=20)
+l_key_gen.grid(row=0, column=2, sticky=N + S + E + W)
+key_gen = Button(tab_wallet, text='Générer une paire de clé', command=lambda: generateKeys())
+key_gen.grid(row=1, column=2, padx=5, pady=5, sticky=N + S + E + W)
 
 # Charger la clé public du destinataire
 l_public_key = Label(tab_wallet, text='Clé public destinataire')
@@ -310,6 +263,12 @@ public_key.grid(row=4, column=0, sticky=N + S + E + W)
 
 button_open_public = Button(tab_wallet, text='Ouvrir une clé public', command=lambda: getPublicKeyFile(public_key))
 button_open_public.grid(row=4, column=1, padx=5, pady=5, sticky=N + S + E + W)
+
+# Montant de mon Portefeuille
+l_amount_wallet = Label(tab_wallet, text='Portefeuille', width=20)
+l_amount_wallet.grid(row=3, column=2, sticky=N + S + E + W)
+amount_wallet = Label(tab_wallet, text='200')
+amount_wallet.grid(row=4, column=2, sticky=N + S + E + W)
 
 # Montant de la transaction
 l_amount_transaction = Label(tab_wallet, text='Montant de la transaction')
@@ -329,6 +288,7 @@ tab_wallet.grid_rowconfigure(9, weight=1)
 
 tab_control.add(tab_wallet, text='Wallet')
 tab_control.pack(expand=1, fill="both", side=LEFT)
+pass
 
 """
 Initialisation de la grille (pour le redimentionnement)
@@ -362,6 +322,10 @@ def createTransaction(private_key: Text, public_key: Text, amount: Entry):
     wallet_logger.warning('Création de la transaction')
     wallet_logger.log('Création de la transaction')
     pass
+
+
+def generateKeys():
+    wallet_logger.warning('Faire la génération de la paire de clé, demander ou enregistrer la paire de clé')
 
 
 fenetre.mainloop()
