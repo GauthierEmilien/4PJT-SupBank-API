@@ -3,22 +3,28 @@ import json
 from Transaction import Transaction
 from Block import Block
 from typing import List
-from threading import Thread
+from threading import Thread, Lock
 from database import DB
 
+lock = Lock()
 
-class Blockchain(Thread):  # Add Thread inheritance for multithreading
+
+class Blockchain:  # Add Thread inheritance for multithreading
     DB = DB('xatomeDB')
 
     def __init__(self):
-        Thread.__init__(self)
         self.__chain: List[Block] = []
         self.__difficulty: int = 5
         self.__pending_transaction: List[Transaction] = []
         self.__reward = 10
 
+    def start(self, miner_reward_address: bytes):
+        t = Thread(target=self.__mine_pending_trans, args=(miner_reward_address,))
+        t.start()
+
     def get_update(self):  # Get the last version of the blockchain from database
-        block_cursor = Blockchain.DB.get_all('blocks')
+        from global_var import block_collection
+        block_cursor = Blockchain.DB.get_all(block_collection)
         self.__chain = []
         for block in block_cursor:
             self.__chain.append(Block.from_dict(block))
@@ -26,12 +32,14 @@ class Blockchain(Thread):  # Add Thread inheritance for multithreading
 
     @classmethod
     def update_all(cls, blocks: List[dict]):
-        cls.DB.delete_all('blocks')
-        cls.DB.insert_many('blocks', blocks)
+        from global_var import block_collection
+        cls.DB.delete_all(block_collection)
+        cls.DB.insert_many(block_collection, blocks)
 
     @classmethod
     def add_block(cls, block: Block):  # Add a block to blockchain database
-        cls.DB.insert('blocks', block.__dict__())
+        from global_var import block_collection
+        cls.DB.insert(block_collection, block.__dict__())
 
     """ /!\/!\ DO NOT CALL ANYMORE !!! /!\/!\ """
 
@@ -44,7 +52,7 @@ class Blockchain(Thread):  # Add Thread inheritance for multithreading
     def __get_last_block(self) -> Block:  # return the last block of the blockchain
         return self.__chain[-1]
 
-    def mine_pending_trans(self, miner_reward_address: bytes):  # maybe the thread start() methode
+    def __mine_pending_trans(self, miner_reward_address: bytes):  # maybe the thread start() methode
         # in reality not all of the pending transaction go into the block the miner gets to pick which one to mine
         new_block = Block(str(datetime.datetime.now()), self.__pending_transaction)
 
@@ -56,6 +64,7 @@ class Blockchain(Thread):  # Add Thread inheritance for multithreading
             print('No valid transaction to add in block')
             return
 
+        new_block.calculate_hash()
         new_block.mine_blocks(self.__difficulty)
         new_block.set_previous_block(self.__get_last_block().get_hash())
 
@@ -67,26 +76,31 @@ class Blockchain(Thread):  # Add Thread inheritance for multithreading
             test_block.append(temp)
         print(test_block)
 
-        Blockchain.DB.insert('block', new_block.__dict__())
+        from global_var import block_collection
+        Blockchain.DB.insert(block_collection, new_block.__dict__())
         self.get_update()
 
         print("Block's Hash: " + new_block.get_hash())
         print("Block added")
 
-        reward_trans = Transaction(b"System", miner_reward_address, self.__reward)
-        self.__pending_transaction.append(reward_trans)
+        from global_var import server
+        server.send_block(new_block.__dict__())
+
+        # reward_trans = Transaction(b"System", miner_reward_address, self.__reward)
+        # self.__pending_transaction.append(reward_trans)
         self.__pending_transaction = []
 
-    def is_chain_valid(self) -> str:  # verify if blockchain is valid
+    def is_chain_valid(self, block: Block = None) -> bool:  # verify if blockchain is valid
+        if block:
+            self.__chain.append(block)
+
         for x in range(1, len(self.__chain)):
             current_block = self.__chain[x]
             previous_block = self.__chain[x - 1]
-
-            print('{} / {} => {}'.format(current_block.get_previous_block(), previous_block.get_hash(),
-                                         current_block.get_previous_block() != previous_block.get_hash()))
             if current_block.get_previous_block() != previous_block.get_hash():
-                return "The Chain is not valid!"
-        return "The Chain is valid and secure"
+                self.__chain.pop()
+                return False
+        return True
 
     def add_transaction(self, transaction: Transaction):  # add a transaction to pending transactions list
         self.__pending_transaction.append(transaction)

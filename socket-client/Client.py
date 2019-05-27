@@ -11,6 +11,7 @@ lock = RLock()
 class Client(Thread):
     nodes_info: List[dict] = []
     connected_nodes: List[dict] = []
+    block_is_valid: List[bool] = []
 
     def __init__(self, server_ip: str, thread_name=None):
         Thread.__init__(self, name=thread_name)
@@ -25,6 +26,7 @@ class Client(Thread):
         self.__sio.on('nodes', self.__on_nodes)
         self.__sio.on('ip', self.__on_ip)
         self.__sio.on('blockchain', self.__on_blockchain)
+        self.__sio.on('block', self.__on_block)
 
     def __on_connect(self):
         print('\nCONNECT TO => {}'.format(self.__server_ip))
@@ -41,9 +43,14 @@ class Client(Thread):
         self.__node_ip = ip
 
     def __on_blockchain(self, blocks: List[dict]):
-        print('on blockchain')
-        Blockchain.update_all(blocks)
+        if len(blocks) > len(xatome_money.get_blocks()):
+            Blockchain.update_all(blocks)
         xatome_money.get_update()
+        self.__disconnect()
+
+    def __on_block(self, is_valid: str):
+        with lock:
+            Client.block_is_valid.append(is_valid)
         self.__disconnect()
 
     def __disconnect(self):
@@ -56,13 +63,9 @@ class Client(Thread):
             except Exception as e:
                 print('error => {} (server ip : {})'.format(e, self.__server_ip))
 
-    def send_transaction(self, transaction: Transaction):
-        print('\nSEND TRANSACTION => {}'.format(transaction.__dict__()))
-        self.__sio.emit('transaction', transaction.__dict__(), callback=self.__disconnect)
-
-    def ask_for_blockchain(self):
-        print('\nASK BLOCKCHAIN')
-        self.__sio.emit('blockchain')
+    def send_message(self, topic: str, data=None, disconnect: bool = True):
+        callback = self.__disconnect if disconnect else None
+        self.__sio.emit(topic, data, callback=callback)
 
     def wait(self):
         self.__sio.wait()

@@ -20,7 +20,7 @@ class Block:
                      block.get('nonce'),
                      block.get('previous_block'))
 
-    def __calculate_hash(self):  # Calculate block hash with transactions list, timestamp and nonce
+    def calculate_hash(self):  # Calculate block hash with transactions list, timestamp and nonce
         data = (str(self.__transactions) + str(self.__timestamp) + str(self.__nonce)).encode()
         hash = hashlib.sha256(data)
         self.__hash = hash.hexdigest()
@@ -28,7 +28,7 @@ class Block:
     def mine_blocks(self, difficulty: int) -> None:
         difficulty_check = "0" * difficulty
         while self.__hash[:difficulty] != difficulty_check:
-            self.__hash = self.__calculate_hash()
+            self.calculate_hash()
             self.__nonce += 1
 
     def get_transactions(self) -> List[Transaction]:

@@ -24,6 +24,7 @@ class Server:
         self.__server.on('disconnect', self.__on_disconnect)
         self.__server.on('transaction', self.__on_transaction)
         self.__server.on('blockchain', self.__on_blockchain)
+        self.__server.on('block', self.__on_block)
         self.__app.router.add_get('/transaction', self.__make_transaction)
         self.__app.router.add_get('/blockchain', self.__update_blockchain)
 
@@ -49,25 +50,31 @@ class Server:
         global_var.xatome_money.add_transaction(transaction)
         print('{} pending transaction(s)'.format(len(global_var.xatome_money.get_pending_transaction())))
         if len(global_var.xatome_money.get_pending_transaction()) >= 5:
-            global_var.xatome_money.mine_pending_trans(global_var.my_key.publickey().export_key('DER'))
+            global_var.xatome_money.start(global_var.my_key.publickey().export_key('DER'))
 
     async def __on_blockchain(self, sid):
         print('SEND BLOCKCHAIN TO => {}'.format(sid))
         await self.__server.emit('blockchain', [b.__dict__() for b in global_var.xatome_money.get_blocks()], room=sid)
+
+    async def __on_block(self, sid, block_data: dict):
+        print('GET BLOCK FROM => {}'.format(sid))
+
+        from Block import Block
+        from global_var import xatome_money
+        from Blockchain import Blockchain
+        block = Block.from_dict(block_data)
+        if xatome_money.is_chain_valid(block):
+            Blockchain.add_block(block)
+            await self.__server.emit('block', 'true', room=sid)
+        else:
+            await self.__server.emit('block', 'false', room=sid)
 
     async def __make_transaction(self, request):
         transaction = Transaction(global_var.eric_key.publickey().export_key('DER'),
                                   global_var.alex_key.publickey().export_key('DER'), 20)
         transaction.sign(global_var.eric_key)
 
-        lock.acquire()
-        for node in Client.Client.nodes_info:
-            if node.get('host') != self.__host:
-                client = Client.Client(node.get('host'))
-                client.start()
-                client.join()
-                client.send_transaction(transaction)
-        lock.release()
+        self.__send_to_every_nodes('transaction', transaction.__dict__())
         return web.Response(text="Message sent to all connected nodes")
 
     async def __update_blockchain(self, request):
@@ -79,7 +86,7 @@ class Server:
         client = Client.Client(nodes_info[index].get('host'))
         client.start()
         client.join()
-        client.ask_for_blockchain()
+        client.send_message('blockchain', disconnect=False)
         print('waiting for blockchain update')
         client.wait()
         return web.Response(text="waiting for updated blockchain")
@@ -91,3 +98,16 @@ class Server:
             web.run_app(self.__app, host=host, port=port)
         except Exception as e:
             print('error from class Server =>', e)
+
+    def __send_to_every_nodes(self, topic: str, data, disconnect=True):
+        lock.acquire()
+        for node in Client.Client.nodes_info:
+            if node.get('host') != self.__host:
+                client = Client.Client(node.get('host'))
+                client.start()
+                client.join()
+                client.send_message(topic, data, disconnect)
+        lock.release()
+
+    def send_block(self, block: dict):
+        self.__send_to_every_nodes('block', block, False)
