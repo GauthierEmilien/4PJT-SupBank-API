@@ -46,8 +46,6 @@ class Client(Thread):
 
     def __on_connect(self):
         print('\nCONNECT TO => {}'.format(self.__server_ip))
-        """Pour tester l'envoie d'un message a d'autres noeuds"""
-        # self.__sio.emit('test', 'bonjour')
 
     def __on_ip(self, ip):
         self.__node_ip = ip
@@ -75,6 +73,9 @@ class Client(Thread):
         print('on blockchain')
         Blockchain.update_all(blocks)
         self.__disconnect()
+
+    def wait(self):
+        self.__sio.wait()
 
     def get_node_ip(self):
         return self.__node_ip
