@@ -2,18 +2,28 @@ import hashlib
 from Transaction import Transaction
 from typing import List
 
+
 class Block:
-    def __init__(self, time_stamp, transactions: List[Transaction], previous_block=''):
-        self.__time_stamp = time_stamp
+    def __init__(self, timestamp: str, transactions: List[Transaction], hash='', nonce=0, previous_block=''):
+        self.__timestamp = timestamp
         self.__transactions: List[Transaction] = transactions
         self.__previous_block = previous_block
-        self.__nonce = 0
-        self.__hash: str = self.__calculate_hash()
+        self.__nonce = nonce
+        self.__hash: str = hash
 
-    def __calculate_hash(self) -> str:
-        data = (str(self.__transactions) + str(self.__time_stamp) + str(self.__nonce)).encode()
+    @classmethod
+    def from_dict(self, block: dict):  # Return a new Block object from block dict
+        transactions: List[Transaction] = [Transaction.from_dict(t) for t in block.get('transactions')]
+        return Block(block.get('timestamp'),
+                     transactions,
+                     block.get('hash'),
+                     block.get('nonce'),
+                     block.get('previous_block'))
+
+    def __calculate_hash(self):  # Calculate block hash with transactions list, timestamp and nonce
+        data = (str(self.__transactions) + str(self.__timestamp) + str(self.__nonce)).encode()
         hash = hashlib.sha256(data)
-        return hash.hexdigest()
+        self.__hash = hash.hexdigest()
 
     def mine_blocks(self, difficulty: int) -> None:
         difficulty_check = "0" * difficulty
@@ -36,3 +46,12 @@ class Block:
 
     def set_previous_block(self, hash: str):
         self.__previous_block = hash
+
+    def __dict__(self) -> dict: # return a dict from a Block object
+        return {
+            'hash': self.__hash,
+            'nonce': self.__nonce,
+            'timestamp': self.__timestamp,
+            'transactions': [t.__dict__() for t in self.__transactions],
+            'previous_block': self.__previous_block
+        }

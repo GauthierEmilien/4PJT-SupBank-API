@@ -2,6 +2,7 @@ from threading import Thread, RLock
 import socketio
 from typing import List
 from Transaction import Transaction
+from Blockchain import Blockchain
 
 lock = RLock()
 
@@ -10,13 +11,12 @@ class Client(Thread):
     nodes_info: List[dict] = []
     connected_nodes: List[dict] = []
 
-    def __init__(self, server_ip: str, thread_name=None, is_node=False):
+    def __init__(self, server_ip: str, thread_name=None):
         Thread.__init__(self, name=thread_name)
         self.__sio = socketio.Client()
         self.__server_ip = server_ip    # ip du server ip
         self.__node_ip = ''             # ip du node actuel
         self.__setup_callbacks()
-        self.__is_node = is_node
 
     def run(self):
         if self.__server_ip:
@@ -29,6 +29,10 @@ class Client(Thread):
         print('\nSEND TRANSACTION => {}'.format(transaction.__dict__()))
         self.__sio.emit('transaction', transaction.__dict__(), callback=self.__disconnect)
 
+    def ask_for_blockchain(self):
+        print('\nASK BLOCKCHAIN')
+        self.__sio.emit('blockchain')
+
     def __disconnect(self):
         self.__sio.disconnect()
 
@@ -37,6 +41,7 @@ class Client(Thread):
         self.__sio.on('disconnect', self.__on_disconnect)
         self.__sio.on('nodes', self.__on_nodes)
         self.__sio.on('ip', self.__on_ip)
+        self.__sio.on('blockchain', self.__on_blockchain)
 
     def __on_connect(self):
         print('\nCONNECT TO => {}'.format(self.__server_ip))
@@ -64,6 +69,11 @@ class Client(Thread):
         #         co = Client(node.get('host'), is_node=True)
         #         co.start()
         #         co.join()
+
+    def __on_blockchain(self, blocks: List[dict]):
+        print('on blockchain')
+        Blockchain.update_all(blocks)
+        self.__disconnect()
 
     def get_node_ip(self):
         return self.__node_ip

@@ -5,6 +5,7 @@ from threading import Lock
 from Cryptodome.PublicKey import RSA
 from Transaction import Transaction
 from Blockchain import Blockchain
+from random import randrange
 
 server = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
@@ -18,6 +19,7 @@ alex_key = RSA.generate(1024)
 my_key = RSA.generate(1024)
 
 xatome_money = Blockchain()
+xatome_money.get_update()
 
 
 # On button click
@@ -28,12 +30,24 @@ async def index(request):
     lock.acquire()
     for node in Client.nodes_info:
         if node.get('host') != node_ip:
-            client = Client(node.get('host'), is_node=True)
+            client = Client(node.get('host'))
             client.start()
             client.join()
             client.send_transaction(transaction)
     lock.release()
     return web.Response(text="Message sent to all connected nodes")
+
+
+async def update_blockchain():
+    lock.acquire()
+    index = randrange(len(Client.nodes_info))
+    client = Client(Client.nodes_info[index].get('host'))
+    lock.release()
+    client.start()
+    client.join()
+    client.ask_for_blockchain()
+    print('waiting for blockchain update')
+    xatome_money.get_update()
 
 
 @server.on('connect')
@@ -65,6 +79,12 @@ async def on_test(sid, transaction_data):
     print('{} pending transaction(s)'.format(len(xatome_money.get_pending_transaction())))
     if len(xatome_money.get_pending_transaction()) >= 5:
         xatome_money.mine_pending_trans(my_key.publickey().export_key('DER'))
+
+
+@server.on('blockchain')
+async def on_blockchain(sid):
+    print('SEND BLOCKCHAIN TO => {}'.format(sid))
+    await server.emit([b.__dict__() for b in xatome_money.get_blocks()], room=sid)
 
 
 app.router.add_get('/', index)
