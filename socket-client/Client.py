@@ -3,6 +3,7 @@ import socketio
 from typing import List
 from Transaction import Transaction
 from Blockchain import Blockchain
+from global_var import xatome_money
 
 lock = RLock()
 
@@ -14,9 +15,39 @@ class Client(Thread):
     def __init__(self, server_ip: str, thread_name=None):
         Thread.__init__(self, name=thread_name)
         self.__sio = socketio.Client()
-        self.__server_ip = server_ip    # ip du server ip
-        self.__node_ip = ''             # ip du node actuel
+        self.__server_ip = server_ip  # ip du server ip
+        self.__node_ip = ''  # ip du node actuel
         self.__setup_callbacks()
+
+    def __setup_callbacks(self):
+        self.__sio.on('connect', self.__on_connect)
+        self.__sio.on('disconnect', self.__on_disconnect)
+        self.__sio.on('nodes', self.__on_nodes)
+        self.__sio.on('ip', self.__on_ip)
+        self.__sio.on('blockchain', self.__on_blockchain)
+
+    def __on_connect(self):
+        print('\nCONNECT TO => {}'.format(self.__server_ip))
+
+    def __on_disconnect(self):
+        print('\nDISCONNECT FROM => {}'.format(self.__server_ip))
+
+    def __on_nodes(self, nodes):
+        with lock:
+            Client.nodes_info = nodes
+            print('\nNODES =>', Client.nodes_info)
+
+    def __on_ip(self, ip):
+        self.__node_ip = ip
+
+    def __on_blockchain(self, blocks: List[dict]):
+        print('on blockchain')
+        Blockchain.update_all(blocks)
+        xatome_money.get_update()
+        self.__disconnect()
+
+    def __disconnect(self):
+        self.__sio.disconnect()
 
     def run(self):
         if self.__server_ip:
@@ -32,47 +63,6 @@ class Client(Thread):
     def ask_for_blockchain(self):
         print('\nASK BLOCKCHAIN')
         self.__sio.emit('blockchain')
-
-    def __disconnect(self):
-        print('disconnect')
-        self.__sio.disconnect()
-
-    def __setup_callbacks(self):
-        self.__sio.on('connect', self.__on_connect)
-        self.__sio.on('disconnect', self.__on_disconnect)
-        self.__sio.on('nodes', self.__on_nodes)
-        self.__sio.on('ip', self.__on_ip)
-        self.__sio.on('blockchain', self.__on_blockchain)
-
-    def __on_connect(self):
-        print('\nCONNECT TO => {}'.format(self.__server_ip))
-
-    def __on_ip(self, ip):
-        self.__node_ip = ip
-
-    def __on_disconnect(self):
-        print('\nDISCONNECT FROM => {}'.format(self.__server_ip))
-
-    def __on_nodes(self, nodes):
-        with lock:
-            Client.nodes_info = nodes
-            print('\nNODES =>', Client.nodes_info)
-
-        """
-        Code a utiliser au cas ou un noeud doit envoyer un message a tous les autres neouds
-        permet de bloquer l'essaie de connexion au noeuds qui sont deja connectes sur celui la
-        """
-        # for node in Client.nodes_info:
-        #     if node.get('host') != self.__node_ip and next(
-        #             (i for i, d in enumerate(Client.connected_nodes) if node.get('host') in d), False):
-        #         co = Client(node.get('host'), is_node=True)
-        #         co.start()
-        #         co.join()
-
-    def __on_blockchain(self, blocks: List[dict]):
-        print('on blockchain')
-        Blockchain.update_all(blocks)
-        self.__disconnect()
 
     def wait(self):
         self.__sio.wait()

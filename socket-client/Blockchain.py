@@ -3,15 +3,15 @@ import json
 from Transaction import Transaction
 from Block import Block
 from typing import List
-# from threading import Thread
+from threading import Thread
 from database import DB
 
 
-class Blockchain:  # Add Thread inheritance for multithreading
+class Blockchain(Thread):  # Add Thread inheritance for multithreading
     DB = DB('xatomeDB')
 
     def __init__(self):
-        # Thread.__init__(self, daemon=True)
+        Thread.__init__(self)
         self.__chain: List[Block] = []
         self.__difficulty: int = 5
         self.__pending_transaction: List[Transaction] = []

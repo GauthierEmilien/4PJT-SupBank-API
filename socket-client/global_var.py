@@ -1,8 +1,12 @@
 from Cryptodome.PublicKey import RSA
-from Blockchain import Blockchain
+import Blockchain
+import Server
+
+server = Server.Server()
 
 eric_key = RSA.generate(1024)
 alex_key = RSA.generate(1024)
 my_key = RSA.generate(1024)
 
-xatome_money = Blockchain()
+xatome_money = Blockchain.Blockchain()
+xatome_money.get_update()
