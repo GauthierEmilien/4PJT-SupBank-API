@@ -38,16 +38,19 @@ async def index(request):
     return web.Response(text="Message sent to all connected nodes")
 
 
-async def update_blockchain():
+async def update_blockchain(request):
+    print('update blockchain')
     lock.acquire()
-    index = randrange(len(Client.nodes_info))
-    client = Client(Client.nodes_info[index].get('host'))
+    nodes_info = [c for c in Client.nodes_info if c.get('host') != node_ip]
     lock.release()
+    index = 0 if len(nodes_info) < 1 else randrange(len(nodes_info))
+    client = Client(nodes_info[index].get('host'))
     client.start()
     client.join()
     client.ask_for_blockchain()
     print('waiting for blockchain update')
     xatome_money.get_update()
+    return web.Response(text="waiting for updated blockchain")
 
 
 @server.on('connect')
@@ -84,7 +87,7 @@ async def on_test(sid, transaction_data):
 @server.on('blockchain')
 async def on_blockchain(sid):
     print('SEND BLOCKCHAIN TO => {}'.format(sid))
-    await server.emit([b.__dict__() for b in xatome_money.get_blocks()], room=sid)
+    await server.emit('blockchain', [b.__dict__() for b in xatome_money.get_blocks()], room=sid)
 
 
 app.router.add_get('/', index)

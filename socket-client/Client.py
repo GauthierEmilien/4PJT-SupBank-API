@@ -34,6 +34,7 @@ class Client(Thread):
         self.__sio.emit('blockchain')
 
     def __disconnect(self):
+        print('disconnect')
         self.__sio.disconnect()
 
     def __setup_callbacks(self):
