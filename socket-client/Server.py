@@ -86,6 +86,7 @@ class Server:
         transaction.sign(global_var.eric_key)
 
         self.__send_to_every_nodes('transaction', transaction.__dict__())
+        await self.__on_transaction('local', transaction.__dict__())
         return web.Response(text="Message sent to all connected nodes")
 
     async def __update_blockchain(self, request):
@@ -132,6 +133,6 @@ class Server:
         lock.release()
 
         from Blockchain import Blockchain
-        Blockchain.add_block(block)
         self.__send_to_every_nodes('block_accepted', block)
+        Blockchain.add_block(block)
         print('accepted block')
