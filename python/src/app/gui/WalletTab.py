@@ -29,7 +29,8 @@ class WalletTab(TabFrame):
         self.privateKeyGroup()
         self.pulicKeyGroup()
         self.generateKeys()
-        self.amount()
+        self.walletAmount()
+        self.transactionAmount()
         self.transactionButton()
 
         self.grid_columnconfigure(0, weight=4)
@@ -64,7 +65,13 @@ class WalletTab(TabFrame):
         key_gen = Button(self, text='Générer une paire de clé', width=25, command=lambda: self.__generateKeys())
         key_gen.grid(row=1, column=2, padx=5, pady=5, sticky=N + S + E + W)
 
-    def amount(self):
+    def walletAmount(self):
+        l_amount_wallet = Label(self, text='Portefeuille', width=20)
+        l_amount_wallet.grid(row=3, column=2, sticky=N + S + E + W)
+        amount_wallet = Label(self, text='200')
+        amount_wallet.grid(row=4, column=2, sticky=N + S + E + W)
+
+    def transactionAmount(self):
         l_amount_transaction = Label(self, text='Montant de la transaction')
         l_amount_transaction.grid(row=6, column=0, sticky=N + S + E + W)
         self.__amount_transaction.grid(row=7, column=0, sticky=N + S + E + W)

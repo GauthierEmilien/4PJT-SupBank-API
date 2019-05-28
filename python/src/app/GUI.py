@@ -6,6 +6,7 @@ from tkinter import simpledialog
 from tkinter import ttk
 
 from gui.BlockchaineTab import BlockchaineTab
+from gui.OptionTab import OptionTab
 from gui.WalletTab import WalletTab
 
 
@@ -43,6 +44,11 @@ class GUI(Tk):
 
         tab_control.add(self.tab_wallet, text='Wallet')
 
+        # Options
+        self.tab_option = OptionTab(tab_control)
+
+        tab_control.add(self.tab_option, text='Options')
+
         tab_control.pack(expand=1, fill="both", side=LEFT)
 
         self.connectIpServer()
@@ -65,10 +71,29 @@ class GUI(Tk):
                                                  parent=block_request_top)
             block_request_top.iconify()
             block_request_top.deiconify()
-            p = re.compile('(\d{1,3}\.){3}\d{1,3}')
-            if not entry_block or not p.match(entry_block):
+            p = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
+
+            if entry_block is None:
+                self.destroy()
+                return
+
+            if not p.match(entry_block):
                 self.connectIpServer()
 
 
-fenetre = GUI()
-fenetre.mainloop()
+def sup():
+    while True:
+        print("n")
+
+
+def mainGui():
+    fenetre = GUI()
+    fenetre.after(0, sup)
+    fenetre.mainloop()
+
+
+mainGui()
+# t = Thread(target=mainGui)
+# t.start()
+
+print("coucou")
