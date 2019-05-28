@@ -1,7 +1,6 @@
 from threading import Thread, RLock
 import socketio
 from typing import List
-from Transaction import Transaction
 from Blockchain import Blockchain
 from global_var import xatome_money
 
@@ -49,6 +48,7 @@ class Client(Thread):
         self.__disconnect()
 
     def __on_block(self, is_valid: str):
+        print('GET VALIDATION =>', is_valid)
         with lock:
             Client.block_is_valid.append(is_valid)
         self.__disconnect()

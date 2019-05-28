@@ -25,11 +25,8 @@ class Block:
         hash = hashlib.sha256(data)
         self.__hash = hash.hexdigest()
 
-    def mine_blocks(self, difficulty: int) -> None:
-        difficulty_check = "0" * difficulty
-        while self.__hash[:difficulty] != difficulty_check:
-            self.calculate_hash()
-            self.__nonce += 1
+    def update_nonce(self):
+        self.__nonce += 1
 
     def get_transactions(self) -> List[Transaction]:
         return self.__transactions

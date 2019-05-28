@@ -18,6 +18,7 @@ class Server:
         self.__app = web.Application()
         self.__server.attach(self.__app)
         self.__setup_callbacks()
+        self.__mining_thread = None
 
     def __setup_callbacks(self):
         self.__server.on('connect', self.__on_connect)
@@ -25,6 +26,7 @@ class Server:
         self.__server.on('transaction', self.__on_transaction)
         self.__server.on('blockchain', self.__on_blockchain)
         self.__server.on('block', self.__on_block)
+        self.__server.on('block_accepted', self.__on_block_accepted)
         self.__app.router.add_get('/transaction', self.__make_transaction)
         self.__app.router.add_get('/blockchain', self.__update_blockchain)
 
@@ -50,7 +52,10 @@ class Server:
         global_var.xatome_money.add_transaction(transaction)
         print('{} pending transaction(s)'.format(len(global_var.xatome_money.get_pending_transaction())))
         if len(global_var.xatome_money.get_pending_transaction()) >= 5:
-            global_var.xatome_money.start(global_var.my_key.publickey().export_key('DER'))
+            from Mining import Mining
+            self.__mining_thread = Mining(global_var.xatome_money, global_var.my_key.publickey().export_key('DER'))
+            self.__mining_thread.start()
+
 
     async def __on_blockchain(self, sid):
         print('SEND BLOCKCHAIN TO => {}'.format(sid))
@@ -58,16 +63,22 @@ class Server:
 
     async def __on_block(self, sid, block_data: dict):
         print('GET BLOCK FROM => {}'.format(sid))
+        if self.__mining_thread and self.__mining_thread.is_alive():
+            self.__mining_thread.stop()
+            self.__mining_thread.join()
+            print('mining thread stopped')
 
         from Block import Block
-        from global_var import xatome_money
-        from Blockchain import Blockchain
         block = Block.from_dict(block_data)
-        if xatome_money.is_chain_valid(block):
-            Blockchain.add_block(block)
+        if global_var.xatome_money.is_chain_valid(block):
             await self.__server.emit('block', 'true', room=sid)
         else:
             await self.__server.emit('block', 'false', room=sid)
+
+    async def __on_block_accepted(self, sid, block):
+        print('GET ACCCEPTED BLOCK => {}'.format(block))
+        from Blockchain import Blockchain
+        Blockchain.add_block(block)
 
     async def __make_transaction(self, request):
         transaction = Transaction(global_var.eric_key.publickey().export_key('DER'),
@@ -99,7 +110,7 @@ class Server:
         except Exception as e:
             print('error from class Server =>', e)
 
-    def __send_to_every_nodes(self, topic: str, data, disconnect=True):
+    def __send_to_every_nodes(self, topic: str, data, disconnect=True, wait=False):
         lock.acquire()
         for node in Client.Client.nodes_info:
             if node.get('host') != self.__host:
@@ -107,7 +118,20 @@ class Server:
                 client.start()
                 client.join()
                 client.send_message(topic, data, disconnect)
+                if wait:
+                    client.wait()
         lock.release()
 
     def send_block(self, block: dict):
-        self.__send_to_every_nodes('block', block, False)
+        self.__send_to_every_nodes('block', block, False, wait=True)
+
+        lock.acquire()
+        for is_valid in Client.Client.block_is_valid:
+            if is_valid == 'false':
+                return
+        lock.release()
+
+        from Blockchain import Blockchain
+        Blockchain.add_block(block)
+        self.__send_to_every_nodes('block_accepted', block)
+        print('accepted block')

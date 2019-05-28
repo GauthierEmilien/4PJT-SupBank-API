@@ -1,9 +1,7 @@
-import datetime
-import json
 from Transaction import Transaction
 from Block import Block
 from typing import List
-from threading import Thread, Lock
+from threading import Lock
 from database import DB
 
 lock = Lock()
@@ -17,10 +15,6 @@ class Blockchain:  # Add Thread inheritance for multithreading
         self.__difficulty: int = 5
         self.__pending_transaction: List[Transaction] = []
         self.__reward = 10
-
-    def start(self, miner_reward_address: bytes):
-        t = Thread(target=self.__mine_pending_trans, args=(miner_reward_address,))
-        t.start()
 
     def get_update(self):  # Get the last version of the blockchain from database
         from global_var import block_collection
@@ -37,9 +31,9 @@ class Blockchain:  # Add Thread inheritance for multithreading
         cls.DB.insert_many(block_collection, blocks)
 
     @classmethod
-    def add_block(cls, block: Block):  # Add a block to blockchain database
+    def add_block(cls, block: dict):  # Add a block to blockchain database
         from global_var import block_collection
-        cls.DB.insert(block_collection, block.__dict__())
+        cls.DB.insert(block_collection, block)
 
     """ /!\/!\ DO NOT CALL ANYMORE !!! /!\/!\ """
 
@@ -49,46 +43,8 @@ class Blockchain:  # Add Thread inheritance for multithreading
 
     """ /!\/!\ DO NOT CALL ANYMORE !!! /!\/!\ """
 
-    def __get_last_block(self) -> Block:  # return the last block of the blockchain
+    def get_last_block(self) -> Block:  # return the last block of the blockchain
         return self.__chain[-1]
-
-    def __mine_pending_trans(self, miner_reward_address: bytes):  # maybe the thread start() methode
-        # in reality not all of the pending transaction go into the block the miner gets to pick which one to mine
-        new_block = Block(str(datetime.datetime.now()), self.__pending_transaction)
-
-        for trans in new_block.get_transactions():
-            if not trans.verify():
-                new_block.remove_transaction(trans)
-
-        if len(new_block.get_transactions()) < 1:
-            print('No valid transaction to add in block')
-            return
-
-        new_block.calculate_hash()
-        new_block.mine_blocks(self.__difficulty)
-        new_block.set_previous_block(self.__get_last_block().get_hash())
-
-        # USELESS : print block informations after mining
-        print("Previous Block's Hash: " + new_block.get_previous_block())
-        test_block = []
-        for trans in new_block.get_transactions():
-            temp = json.dumps(trans.__dict__())
-            test_block.append(temp)
-        print(test_block)
-
-        from global_var import block_collection
-        Blockchain.DB.insert(block_collection, new_block.__dict__())
-        self.get_update()
-
-        print("Block's Hash: " + new_block.get_hash())
-        print("Block added")
-
-        from global_var import server
-        server.send_block(new_block.__dict__())
-
-        # reward_trans = Transaction(b"System", miner_reward_address, self.__reward)
-        # self.__pending_transaction.append(reward_trans)
-        self.__pending_transaction = []
 
     def is_chain_valid(self, block: Block = None) -> bool:  # verify if blockchain is valid
         if block:
@@ -123,3 +79,6 @@ class Blockchain:  # Add Thread inheritance for multithreading
 
     def get_blocks(self) -> List[Block]:
         return self.__chain
+
+    def get_difficulty(self) -> int:
+        return self.__difficulty
