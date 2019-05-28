@@ -56,7 +56,6 @@ class Server:
             self.__mining_thread = Mining(global_var.xatome_money, global_var.my_key.publickey().export_key('DER'))
             self.__mining_thread.start()
 
-
     async def __on_blockchain(self, sid):
         print('SEND BLOCKCHAIN TO => {}'.format(sid))
         await self.__server.emit('blockchain', [b.__dict__() for b in global_var.xatome_money.get_blocks()], room=sid)
@@ -77,8 +76,15 @@ class Server:
 
     async def __on_block_accepted(self, sid, block):
         print('GET ACCCEPTED BLOCK => {}'.format(block))
-        from Blockchain import Blockchain
-        Blockchain.add_block(block)
+        if block != 'false':
+            from Blockchain import Blockchain
+            Blockchain.add_block(block)
+            global_var.xatome_money.clear_pending_transaction()
+        # else:
+        #     print('restart mining')
+        #     from Mining import Mining
+        #     self.__mining_thread = Mining(global_var.xatome_money, self.__mining_thread.get_reward_address())
+        #     self.__mining_thread.start()
 
     async def __make_transaction(self, request):
         transaction = Transaction(global_var.eric_key.publickey().export_key('DER'),
@@ -124,15 +130,27 @@ class Server:
         lock.release()
 
     def send_block(self, block: dict):
+        print('send block')
         self.__send_to_every_nodes('block', block, False, wait=True)
+        print('block sent')
+
+        is_block_accepted = True
 
         lock.acquire()
         for is_valid in Client.Client.block_is_valid:
             if is_valid == 'false':
-                return
+                print('block not accepted')
+                is_block_accepted = False
         lock.release()
 
-        from Blockchain import Blockchain
-        self.__send_to_every_nodes('block_accepted', block)
-        Blockchain.add_block(block)
-        print('accepted block')
+        if not is_block_accepted:
+            self.__send_to_every_nodes('block_accepted', 'false')
+        else:
+            global_var.xatome_money.clear_pending_transaction()
+
+            from Blockchain import Blockchain
+            print('block sended =>', block)
+            self.__send_to_every_nodes('block_accepted', block, wait=True)
+            Blockchain.add_block(block)
+            global_var.xatome_money.get_update()
+            print('accepted block')

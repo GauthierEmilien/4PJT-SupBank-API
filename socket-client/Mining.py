@@ -1,4 +1,4 @@
-from threading import Thread, Event
+from threading import Thread
 from Blockchain import Blockchain
 from Block import Block
 import datetime
@@ -14,6 +14,7 @@ class Mining(Thread):
         self.__stop = False
 
     def run(self) -> None:
+        print('start mining')
         new_block = Block(str(datetime.datetime.now()), self.__blockchain.get_pending_transaction())
 
         for trans in new_block.get_transactions():
@@ -37,11 +38,11 @@ class Mining(Thread):
         if not self.__stop:
             from global_var import server
             server.send_block(new_block.__dict__())
+            print('thread finished')
 
     def stop(self):
         print('stop thread')
         self.__stop = True
-
 
     def __mine_block(self, block: Block):
         difficulty = self.__blockchain.get_difficulty()
@@ -49,3 +50,6 @@ class Mining(Thread):
         while not self.__stop and block.get_hash()[:difficulty] != difficulty_check:
             block.calculate_hash()
             block.update_nonce()
+
+    def get_reward_address(self) -> bytes:
+        return self.__reward_address

@@ -82,3 +82,6 @@ class Blockchain:  # Add Thread inheritance for multithreading
 
     def get_difficulty(self) -> int:
         return self.__difficulty
+
+    def clear_pending_transaction(self):
+        self.__pending_transaction = []
