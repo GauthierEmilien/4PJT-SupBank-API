@@ -5,17 +5,31 @@ import netifaces as ni
 from PyInquirer import prompt
 from random import randrange
 
+from database import DB
+
 sio = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
 routes = web.RouteTableDef()
 sio.attach(app)
 
 nodes: List[dict] = []
+database = DB('xatomeDB')
 
 @routes.post('/login')
 async def login(request: web_request.Request):
     print(request)
     return web.json_response({'coucou': 'bonjour'})
+
+@routes.post('/register')
+async def register(request: web_request.Request):
+    user: dict = await request.json()
+    existing_user = database.get_one('users', {'email': user.get('email')})
+    if existing_user:
+        return web.json_response({'error': 'User already exists in database'})
+    else:
+        res = user.copy()
+        database.insert('users', user)
+        return web.json_response(res)
 
 @routes.get('/blockchain')
 async def get_blockchain(_):
