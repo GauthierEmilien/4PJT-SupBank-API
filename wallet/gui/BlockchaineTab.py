@@ -1,14 +1,13 @@
 from tkinter import CENTER
 from tkinter import E
-from tkinter import Frame
-from tkinter import Label
 from tkinter import N
 from tkinter import S
 from tkinter import W
+from tkinter import ttk
 
-from gui.MiningButton import MiningButton
-from gui.TabFrame import TabFrame
-from gui.TextAndScrollBar import TextAndScrollBar
+from wallet.gui.MiningButton import MiningButton
+from wallet.gui.TabFrame import TabFrame
+from wallet.gui.TextAndScrollBar import TextAndScrollBar
 
 
 class BlockchaineTab(TabFrame):
@@ -31,10 +30,10 @@ class BlockchaineTab(TabFrame):
 
     def miningActions(self):
         self.__buttonStartMining = MiningButton(self, text="Start mining",
-                                                command=lambda: self.__buttonStartMiningAction(), height=2)
+                                                command=lambda: self.__buttonStartMiningAction())
         self.__buttonStartMining.show()
         self.__buttonStopMining = MiningButton(self, text="Stop mining",
-                                               command=lambda: self.__buttonStopMiningAction(), height=2)
+                                               command=lambda: self.__buttonStopMiningAction())
 
     def __buttonStartMiningAction(self):
         self.logger.log('Mining in progress')
@@ -47,15 +46,15 @@ class BlockchaineTab(TabFrame):
         self.__buttonStartMining.show()
 
     def pendingTransactions(self):
-        label_pending = Label(self, text='Pending transaction', background='red', anchor=CENTER)
+        label_pending = ttk.Label(self, text='Pending transaction', background='red', anchor=CENTER)
         label_pending.grid(row=2, column=0, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
-        pending_transactions_frame = Frame(self)
+        pending_transactions_frame = ttk.Frame(self)
         pending_transactions_frame.grid(row=3, column=0, rowspan=6, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
         pending_transactions = TextAndScrollBar(pending_transactions_frame, state='disabled')
 
     def generatedBlocks(self):
-        label_blocks = Label(self, text='Block généré', background='red', anchor=CENTER)
+        label_blocks = ttk.Label(self, text='Block généré', background='red', anchor=CENTER)
         label_blocks.grid(row=2, column=2, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
-        generated_blocks_frame = Frame(self)
+        generated_blocks_frame = ttk.Frame(self)
         generated_blocks_frame.grid(row=3, column=2, rowspan=6, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
         generated_blocks = TextAndScrollBar(generated_blocks_frame, state='disabled')

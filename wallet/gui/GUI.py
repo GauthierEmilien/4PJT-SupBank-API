@@ -2,12 +2,14 @@ import re
 from _tkinter import TclError
 from tkinter import LEFT
 from tkinter import Tk
-from tkinter import simpledialog
 from tkinter import ttk
 
-from gui.BlockchaineTab import BlockchaineTab
-from gui.OptionTab import OptionTab
-from gui.WalletTab import WalletTab
+from ttkthemes import ThemedStyle
+
+from wallet.gui.AskIp import AskIp
+from wallet.gui.BlockchaineTab import BlockchaineTab
+from wallet.gui.OptionTab import OptionTab
+from wallet.gui.WalletTab import WalletTab
 
 
 # TODO: Gerer les bonnes actions sur les boutons
@@ -23,6 +25,8 @@ class GUI(Tk):
 
     def __init__(self):
         Tk.__init__(self)
+        style = ThemedStyle(self)
+        style.set_theme("arc")
         self.title('XatomeCoin')
         self.configure(bg='white')
         try:
@@ -60,25 +64,29 @@ class GUI(Tk):
             self.tab_wallet.logger.success('Connexion au server IP réussi')
         else:
             # Popup window
-            block_request_top = Tk.winfo_toplevel(self)
-            block_request_top.title("Blocked fields")
+            # block_request_top = Tk.winfo_toplevel(self)
+            # block_request_top.title("Blocked fields")
+            #
+            # block_request_top.withdraw()
 
-            block_request_top.withdraw()
+            # entry_block = simpledialog.askstring("Blocked fields",
+            #                                      'Impossible de contacter le server IP.\n'
+            #                                      'Entrez l\'ip du server x.x.x.x : ',
+            #                                      parent=block_request_top)
 
-            entry_block = simpledialog.askstring("Blocked fields",
-                                                 'Impossible de contacter le server IP.\n'
-                                                 'Entrez l\'ip du server x.x.x.x : ',
-                                                 parent=block_request_top)
-            block_request_top.iconify()
-            block_request_top.deiconify()
+            entry_block = AskIp(self)
+            entry_block.askstring()
+
+            # block_request_top.iconify()
+            # block_request_top.deiconify()
             p = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
 
             if entry_block is None:
                 self.destroy()
                 return
 
-            if not p.match(entry_block):
-                self.connectIpServer()
+            # if not p.match(entry_block):
+            #     self.connectIpServer()
 
 
 fenetre = GUI()
