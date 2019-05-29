@@ -37,8 +37,12 @@ async def get_blockchain(_):
         index = 0 if len(nodes) == 1 else randrange(len(nodes))
         async with ClientSession() as session:
             async with session.get('http://' + nodes[index].get('host') + ':8000/blockchain') as resp:
-                print(type(resp))
-                print(resp)
+                print('resp type', type(resp))
+                chain = await resp.json()
+                print('chain', chain)
+
+        return web.json_response(chain)
+    return web.Response(text='no nodes connected')
 
 
 app.add_routes(routes)
