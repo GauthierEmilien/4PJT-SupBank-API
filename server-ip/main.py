@@ -1,15 +1,33 @@
 import socketio
-from aiohttp import web, web_request
+from aiohttp import web, web_request, ClientSession
 from typing import List
 import netifaces as ni
 from PyInquirer import prompt
+from random import randrange
 
 sio = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
+routes = web.RouteTableDef()
 sio.attach(app)
 
 nodes: List[dict] = []
 
+@routes.post('/login')
+async def login(request: web_request.Request):
+    print(request)
+    return web.json_response({'coucou': 'bonjour'})
+
+@routes.get('/blockchain')
+async def get_blockchain(_):
+    if len(nodes) > 0:
+        index = 0 if len(nodes) == 1 else randrange(len(nodes))
+        async with ClientSession() as session:
+            async with session.get('http://' + nodes[index].get('host') + ':8000/blockchain') as resp:
+                print(type(resp))
+                print(resp)
+
+
+app.add_routes(routes)
 
 @sio.on('connect')
 async def connect(sid, environ: dict):
