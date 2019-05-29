@@ -1,10 +1,11 @@
-from Transaction import Transaction
-from Block import Block
+from blockchain.Transaction import Transaction
+from blockchain.Block import Block
 from typing import List
 from threading import Lock
-from database import DB
+from .database import DB
 
 lock = Lock()
+block_collection = 'blocks'
 
 
 class Blockchain:  # Add Thread inheritance for multithreading
@@ -17,23 +18,18 @@ class Blockchain:  # Add Thread inheritance for multithreading
         self.__reward = 10
 
     def get_update(self):  # Get the last version of the blockchain from database
-        from global_var import block_collection
         block_cursor = Blockchain.DB.get_all(block_collection)
         self.__chain = []
         for block in block_cursor:
             self.__chain.append(Block.from_dict(block))
         print(self.__chain)
 
-    @classmethod
-    def update_all(cls, blocks: List[dict]):
-        from global_var import block_collection
-        cls.DB.delete_all(block_collection)
-        cls.DB.insert_many(block_collection, blocks)
+    def update_all(self, blocks: List[dict]):
+        Blockchain.DB.delete_all(block_collection)
+        Blockchain.DB.insert_many(block_collection, blocks)
 
-    @classmethod
-    def add_block(cls, block: dict):  # Add a block to blockchain database
-        from global_var import block_collection
-        cls.DB.insert(block_collection, block)
+    def add_block(self, block: dict):  # Add a block to blockchain database
+        Blockchain.DB.insert(block_collection, block)
 
     """ /!\/!\ DO NOT CALL ANYMORE !!! /!\/!\ """
 
@@ -83,5 +79,8 @@ class Blockchain:  # Add Thread inheritance for multithreading
     def get_difficulty(self) -> int:
         return self.__difficulty
 
-    def clear_pending_transaction(self):
-        self.__pending_transaction = []
+    def clear_pending_transaction(self, block_transactions: List[dict]):
+        for transaction in block_transactions:
+            t = Transaction.from_dict(transaction)
+            if t in self.__pending_transaction:
+                self.__pending_transaction.remove(t)

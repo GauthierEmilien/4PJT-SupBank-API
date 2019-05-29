@@ -1,5 +1,5 @@
 import hashlib
-from Transaction import Transaction
+from blockchain.Transaction import Transaction
 from typing import List
 
 

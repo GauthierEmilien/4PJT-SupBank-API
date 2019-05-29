@@ -1,8 +1,7 @@
 from threading import Thread, RLock
 import socketio
 from typing import List
-from Blockchain import Blockchain
-from global_var import xatome_money
+from blockchain.Blockchain import Blockchain
 
 lock = RLock()
 
@@ -12,12 +11,25 @@ class Client(Thread):
     connected_nodes: List[dict] = []
     block_is_valid: List[bool] = []
 
-    def __init__(self, server_ip: str, thread_name=None):
+    def __init__(self, server_ip: str, thread_name=None, blockchain: Blockchain = None):
         Thread.__init__(self, name=thread_name)
         self.__sio = socketio.Client()
         self.__server_ip = server_ip  # ip du server ip
         self.__node_ip = ''  # ip du node actuel
         self.__setup_callbacks()
+        self.__blockchain = blockchain
+
+    @classmethod
+    def send_to_every_nodes(cls, host: str, topic: str, data, disconnect=True, wait=False):
+        with lock:
+            for node in Client.nodes_info:
+                if node.get('host') != host:
+                    client = Client(node.get('host'))
+                    client.start()
+                    client.join()
+                    client.send_message(topic, data, disconnect)
+                    if wait:
+                        client.wait()
 
     def __setup_callbacks(self):
         self.__sio.on('connect', self.__on_connect)
@@ -42,9 +54,9 @@ class Client(Thread):
         self.__node_ip = ip
 
     def __on_blockchain(self, blocks: List[dict]):
-        if len(blocks) > len(xatome_money.get_blocks()):
-            Blockchain.update_all(blocks)
-        xatome_money.get_update()
+        if len(blocks) > len(self.__blockchain.get_blocks()):
+            self.__blockchain.update_all(blocks)
+        self.__blockchain.get_update()
         self.__disconnect()
 
     def __on_block(self, is_valid: str):
