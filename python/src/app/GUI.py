@@ -81,19 +81,5 @@ class GUI(Tk):
                 self.connectIpServer()
 
 
-def sup():
-    while True:
-        print("n")
-
-
-def mainGui():
-    fenetre = GUI()
-    fenetre.after(0, sup)
-    fenetre.mainloop()
-
-
-mainGui()
-# t = Thread(target=mainGui)
-# t.start()
-
-print("coucou")
+fenetre = GUI()
+fenetre.mainloop()
