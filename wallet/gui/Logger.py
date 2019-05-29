@@ -1,15 +1,15 @@
 from tkinter import DISABLED
 from tkinter import END
-from tkinter import Frame
 from tkinter import NORMAL
+from tkinter import ttk
 
-from gui.TextAndScrollBar import TextAndScrollBar
+from wallet.gui.TextAndScrollBar import TextAndScrollBar
 
 
-class Logger(Frame):
+class Logger(ttk.Frame):
 
     def __init__(self, parent, *args, **kw):
-        Frame.__init__(self, parent, *args, **kw)
+        ttk.Frame.__init__(self, parent, **kw)
         self.__loggerText = TextAndScrollBar(self, state='disabled', height=8)
         self.__loggerText.tag_config("log", foreground="black")
         self.__loggerText.tag_config("success", foreground="green")

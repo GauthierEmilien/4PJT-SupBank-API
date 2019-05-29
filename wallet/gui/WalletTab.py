@@ -1,17 +1,17 @@
-from tkinter import Button
+from tkinter import CENTER
 from tkinter import E
 from tkinter import END
 from tkinter import Entry
 from tkinter import INSERT
-from tkinter import Label
 from tkinter import N
 from tkinter import S
 from tkinter import Text
 from tkinter import W
 from tkinter import messagebox
+from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 
-from gui.TabFrame import TabFrame
+from wallet.gui.TabFrame import TabFrame
 
 
 class WalletTab(TabFrame):
@@ -21,7 +21,7 @@ class WalletTab(TabFrame):
 
     def __init__(self, parent, **args):
         TabFrame.__init__(self, parent, **args)
-        self.__amount_transaction = Entry(self, text='')
+        self.__amount_transaction = ttk.Entry(self, text='')
         self.__private_wallet_key = Text(self, height=5)
         self.__public_key = Text(self, height=5)
         self.initLogger()
@@ -38,46 +38,46 @@ class WalletTab(TabFrame):
         self.grid_columnconfigure(2, weight=1)
 
     def privateKeyGroup(self):
-        l_private_wallet_key = Label(self, text='Clé privée')
+        l_private_wallet_key = ttk.Label(self, text='Clé privée', padding=10)
         l_private_wallet_key.grid(row=0, column=0, sticky=N + S + E + W)
 
         self.__private_wallet_key.grid(row=1, column=0, sticky=N + S + E + W)
 
-        button_open_private = Button(self, text='Ouvrir une clé privée', width=25,
+        button_open_private = ttk.Button(self, text='Ouvrir une clé privée', width=25,
                                      command=lambda: self.__getPrivateKeyFile(self.__private_wallet_key))
         button_open_private.grid(row=1, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
     def pulicKeyGroup(self):
-        l_public_key = Label(self, text='Clé public destinataire')
+        l_public_key = ttk.Label(self, text='Clé public destinataire', padding=10)
         l_public_key.grid(row=3, column=0, sticky=N + S + E + W)
 
         self.__public_key.grid(row=4, column=0, sticky=N + S + E + W)
 
-        button_open_public = Button(self, text='Ouvrir une clé public', width=25,
+        button_open_public = ttk.Button(self, text='Ouvrir une clé public', width=25,
                                     command=lambda: self.__getPublicKeyFile(self.__public_key))
         button_open_public.grid(row=4, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
     def generateKeys(self):
         # Générer une paire de clé
-        l_key_gen = Label(self, text='Générer une paire de clé', width=20)
+        l_key_gen = ttk.Label(self, text='Générer une paire de clé', width=20, anchor=CENTER, padding=10)
         l_key_gen.grid(row=0, column=2, sticky=N + S + E + W)
 
-        key_gen = Button(self, text='Générer une paire de clé', width=25, command=lambda: self.__generateKeys())
+        key_gen = ttk.Button(self, text='Générer une paire de clé', width=25, command=lambda: self.__generateKeys())
         key_gen.grid(row=1, column=2, padx=5, pady=5, sticky=N + S + E + W)
 
     def walletAmount(self):
-        l_amount_wallet = Label(self, text='Portefeuille', width=20)
+        l_amount_wallet = ttk.Label(self, text='Portefeuille', width=20, anchor=CENTER, padding=10)
         l_amount_wallet.grid(row=3, column=2, sticky=N + S + E + W)
-        amount_wallet = Label(self, text='200')
+        amount_wallet = ttk.Label(self, text='200', anchor=CENTER)
         amount_wallet.grid(row=4, column=2, sticky=N + S + E + W)
 
     def transactionAmount(self):
-        l_amount_transaction = Label(self, text='Montant de la transaction')
+        l_amount_transaction = ttk.Label(self, text='Montant de la transaction', padding=10)
         l_amount_transaction.grid(row=6, column=0, sticky=N + S + E + W)
         self.__amount_transaction.grid(row=7, column=0, sticky=N + S + E + W)
 
     def transactionButton(self):
-        button_valid_transaction = Button(self, text='Valider la transaction', height=2,
+        button_valid_transaction = ttk.Button(self, text='Valider la transaction',
                                           command=lambda: self.__createTransaction(self.__private_wallet_key,
                                                                                    self.__public_key,
                                                                                    self.__amount_transaction))

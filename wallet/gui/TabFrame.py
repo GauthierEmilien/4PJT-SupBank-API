@@ -1,15 +1,15 @@
 from tkinter import E
-from tkinter import Frame
 from tkinter import S
 from tkinter import W
+from tkinter import ttk
 
-from gui.Logger import Logger
+from wallet.gui.Logger import Logger
 
 
-class TabFrame(Frame):
+class TabFrame(ttk.Frame):
 
     def __init__(self, parent, **args):
-        Frame.__init__(self, parent, **args)
+        ttk.Frame.__init__(self, parent, **args)
         self.logger = Logger(self)
 
     def initLogger(self):

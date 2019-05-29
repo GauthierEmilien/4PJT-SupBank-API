@@ -1,12 +1,12 @@
 import re
+from tkinter import CENTER
 from tkinter import E
-from tkinter import Entry
-from tkinter import Label
 from tkinter import N
 from tkinter import S
 from tkinter import W
+from tkinter import ttk
 
-from gui.TabFrame import TabFrame
+from wallet.gui.TabFrame import TabFrame
 
 
 class OptionTab(TabFrame):
@@ -16,7 +16,7 @@ class OptionTab(TabFrame):
 
     def __init__(self, parent, **args):
         TabFrame.__init__(self, parent, **args)
-        self.__ip_server_ip = Entry(self, width=15, validate='key',
+        self.__ip_server_ip = ttk.Entry(self, width=15, validate='key',
                                     validatecommand=(self.register(self.isValidKeyIp), '%S'))
         self.setIpServerIP()
 
@@ -24,7 +24,7 @@ class OptionTab(TabFrame):
         self.grid_columnconfigure(2, weight=10)
 
     def setIpServerIP(self):
-        l_ip_server_ip = Label(self, text='IP du serveurIP')
+        l_ip_server_ip = ttk.Label(self, text='IP du serveurIP', anchor=CENTER)
         l_ip_server_ip.grid(row=0, column=1, sticky=N + S + E + W)
         self.__ip_server_ip.grid(row=1, column=1, sticky=N + S + E + W)
         value = self.__ip_server_ip.get()
