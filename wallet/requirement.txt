@@ -1,0 +1,5 @@
+pycryptodomex
+python-socketio
+aiohttp
+requests
+pymongo
