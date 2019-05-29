@@ -24,12 +24,15 @@ class Client(Thread):
         with lock:
             for node in Client.nodes_info:
                 if node.get('host') != host:
-                    client = Client(node.get('host'))
-                    client.start()
-                    client.join()
-                    client.send_message(topic, data, disconnect)
-                    if wait:
-                        client.wait()
+                    try:
+                        client = Client(node.get('host'))
+                        client.start()
+                        client.join()
+                        client.send_message(topic, data, disconnect)
+                        if wait:
+                            client.wait()
+                    except Exception as e:
+                        print('error => {}'.format(e))
 
     def __setup_callbacks(self):
         self.__sio.on('connect', self.__on_connect)
@@ -70,10 +73,7 @@ class Client(Thread):
 
     def run(self):
         if self.__server_ip:
-            try:
-                self.__sio.connect('http://{}:8000'.format(self.__server_ip))
-            except Exception as e:
-                print('error => {} (server ip : {})'.format(e, self.__server_ip))
+            self.__sio.connect('http://{}:8000'.format(self.__server_ip))
 
     def send_message(self, topic: str, data=None, disconnect: bool = True):
         callback = self.__disconnect if disconnect else None

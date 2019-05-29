@@ -31,6 +31,7 @@ class Server:
         self.__mining_thread = None
         self.__blockchain = Blockchain()
         self.__blockchain.get_update()
+        self.__mining = False
 
     def __setup_callbacks(self):
         self.__server.on('connect', self.__on_connect)
@@ -62,7 +63,7 @@ class Server:
         print('TRANSACTION FROM {} => {}'.format(sid, transaction.__dict__()))
         self.__blockchain.add_transaction(transaction)
         print('{} pending transaction(s)'.format(len(self.__blockchain.get_pending_transaction())))
-        if len(self.__blockchain.get_pending_transaction()) >= 5:
+        if self.__mining and len(self.__blockchain.get_pending_transaction()) >= 5:
             if self.__mining_thread is None or (self.__mining_thread and not self.__mining_thread.is_alive()):
                 self.__mining_thread = Mining(self.__blockchain, my_key.publickey().export_key('DER'), self.__host)
 
@@ -111,12 +112,15 @@ class Server:
         lock.release()
         if len(nodes_info) > 0:
             index = 0 if len(nodes_info) == 1 else randrange(len(nodes_info))
-            client = Client(nodes_info[index].get('host'), blockchain=self.__blockchain)
-            client.start()
-            client.join()
-            client.send_message('blockchain', disconnect=False)
-            print('waiting for blockchain update')
-            client.wait()
+            try:
+                client = Client(nodes_info[index].get('host'), blockchain=self.__blockchain)
+                client.start()
+                client.join()
+                client.send_message('blockchain', disconnect=False)
+                print('waiting for blockchain update')
+                client.wait()
+            except Exception as e:
+                print('error => {}'.format(e))
 
     def start(self, host: str, port: int):
         self.__host = host
@@ -126,3 +130,9 @@ class Server:
             web.run_app(self.__app, host=host, port=port)
         except Exception as e:
             print('error from class Server =>', e)
+
+    def start_mining(self):
+        self.__mining = True
+
+    def stop_mining(self):
+        self.__mining = False
