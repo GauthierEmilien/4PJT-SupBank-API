@@ -41,6 +41,7 @@ class Server:
         self.__server.on('block', self.__on_block)
         self.__server.on('block_accepted', self.__on_block_accepted)
         self.__app.router.add_get('/transaction', self.__make_transaction)
+        self.__app.router.add_get('/blockchain', self.__return_blockchain)
 
     async def __on_connect(self, sid, environ: dict):
         req: web_request.Request = environ.get('aiohttp.request')
@@ -94,6 +95,9 @@ class Server:
         #     from Mining import Mining
         #     self.__mining_thread = Mining(global_var.xatome_money, self.__mining_thread.get_reward_address())
         #     self.__mining_thread.start()
+
+    async def __return_blockchain(self, request: web_request.Request):
+        return web.json_response(self.__blockchain.__dict__())
 
     async def __make_transaction(self, _):
         transaction = Transaction(str(datetime.now()), eric_key.publickey().export_key('DER'), alex_key.publickey().export_key('DER'), 20)
