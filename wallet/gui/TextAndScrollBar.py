@@ -1,6 +1,5 @@
 from tkinter import BOTH
 from tkinter import RIGHT
-from tkinter import Scrollbar
 from tkinter import Text
 from tkinter import Y
 from tkinter import ttk

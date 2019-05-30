@@ -1,4 +1,3 @@
-import re
 from _tkinter import TclError
 from tkinter import LEFT
 from tkinter import Tk
@@ -12,6 +11,7 @@ from wallet.gui.OptionTab import OptionTab
 from wallet.gui.WalletTab import WalletTab
 
 
+# TODO: Faire passer la popUp au premier plan (dans le cas ou impossible de se connecter)
 # TODO: Gerer les bonnes actions sur les boutons
 # TODO: Améliorer le responsive
 # TODO: Changer les couleurs de l'interface
@@ -27,6 +27,7 @@ class GUI(Tk):
         Tk.__init__(self)
         style = ThemedStyle(self)
         style.set_theme("arc")
+        # style.set_theme("equilux")
         self.title('XatomeCoin')
         self.configure(bg='white')
         try:
@@ -63,30 +64,14 @@ class GUI(Tk):
             self.tab_blockchaine.logger.success('Connexion au server IP réussi')
             self.tab_wallet.logger.success('Connexion au server IP réussi')
         else:
-            # Popup window
-            # block_request_top = Tk.winfo_toplevel(self)
-            # block_request_top.title("Blocked fields")
-            #
-            # block_request_top.withdraw()
+            self.serverIp = AskIp(self, 'Impossible de contacter le server IP.\n'
+                                        'Entrez l\'ip du server x.x.x.x : ').askvalue()
 
-            # entry_block = simpledialog.askstring("Blocked fields",
-            #                                      'Impossible de contacter le server IP.\n'
-            #                                      'Entrez l\'ip du server x.x.x.x : ',
-            #                                      parent=block_request_top)
-
-            entry_block = AskIp(self)
-            entry_block.askstring()
-
-            # block_request_top.iconify()
-            # block_request_top.deiconify()
-            p = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
-
-            if entry_block is None:
+            if self.serverIp is None:
                 self.destroy()
                 return
 
-            # if not p.match(entry_block):
-            #     self.connectIpServer()
+            self.tab_option.setIp(self.serverIp)
 
 
 fenetre = GUI()

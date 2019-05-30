@@ -1,7 +1,9 @@
 import re
 from tkinter import CENTER
 from tkinter import E
+from tkinter import END
 from tkinter import N
+from tkinter import NORMAL
 from tkinter import S
 from tkinter import W
 from tkinter import ttk
@@ -16,8 +18,8 @@ class OptionTab(TabFrame):
 
     def __init__(self, parent, **args):
         TabFrame.__init__(self, parent, **args)
-        self.__ip_server_ip = ttk.Entry(self, width=15, validate='key',
-                                    validatecommand=(self.register(self.isValidKeyIp), '%S'))
+        self.__ip_server_ip = ttk.Entry(self, width=15, justify=CENTER, validate='all',
+                                        validatecommand=(self.register(self.isValidKeyIp), '%S'))
         self.setIpServerIP()
 
         self.grid_columnconfigure(0, weight=10)
@@ -41,3 +43,9 @@ class OptionTab(TabFrame):
         if value.isdigit() or value == '.':
             return True
         return False
+
+    def setIp(self, ip: str):
+        self.setvar('state', NORMAL)
+        self.__ip_server_ip.delete(0, END)
+        for v in ip:
+            self.__ip_server_ip.insert(0, v)

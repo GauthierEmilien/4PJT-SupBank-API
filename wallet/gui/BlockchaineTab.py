@@ -10,6 +10,9 @@ from wallet.gui.TabFrame import TabFrame
 from wallet.gui.TextAndScrollBar import TextAndScrollBar
 
 
+# TODO: text en français
+
+
 class BlockchaineTab(TabFrame):
     """
     Création du tab "blockchaine"
@@ -22,7 +25,7 @@ class BlockchaineTab(TabFrame):
 
         self.miningActions()
         self.pendingTransactions()
-        self.generatedBlocks()
+        # self.generatedBlocks()
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=5)
@@ -46,14 +49,14 @@ class BlockchaineTab(TabFrame):
         self.__buttonStartMining.show()
 
     def pendingTransactions(self):
-        label_pending = ttk.Label(self, text='Pending transaction', background='red', anchor=CENTER)
-        label_pending.grid(row=2, column=0, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
+        label_pending = ttk.Label(self, text='Pending transaction', anchor=CENTER, padding=10)
+        label_pending.grid(row=2, column=0, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
         pending_transactions_frame = ttk.Frame(self)
-        pending_transactions_frame.grid(row=3, column=0, rowspan=6, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
+        pending_transactions_frame.grid(row=3, column=0, rowspan=6, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
         pending_transactions = TextAndScrollBar(pending_transactions_frame, state='disabled')
 
     def generatedBlocks(self):
-        label_blocks = ttk.Label(self, text='Block généré', background='red', anchor=CENTER)
+        label_blocks = ttk.Label(self, text='Block généré', anchor=CENTER, padding=10)
         label_blocks.grid(row=2, column=2, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
         generated_blocks_frame = ttk.Frame(self)
         generated_blocks_frame.grid(row=3, column=2, rowspan=6, columnspan=2, padx=5, pady=5, sticky=N + S + E + W)
