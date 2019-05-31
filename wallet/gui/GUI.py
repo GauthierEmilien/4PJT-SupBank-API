@@ -1,10 +1,13 @@
 from _tkinter import TclError
+from concurrent.futures import ThreadPoolExecutor
 from tkinter import LEFT
 from tkinter import Tk
 from tkinter import ttk
 
 from ttkthemes import ThemedStyle
 
+from server.Client import Client
+from server.Server import Server
 from wallet.gui.AskIp import AskIp
 from wallet.gui.BlockchaineTab import BlockchaineTab
 from wallet.gui.OptionTab import OptionTab
@@ -30,6 +33,7 @@ class GUI(Tk):
         # style.set_theme("equilux")
         self.title('XatomeCoin')
         self.configure(bg='white')
+        # self.protocol("WM_DELETE_WINDOW", self.on_closing)
         try:
             self.iconbitmap(r'./ressources/Ph03nyx-Super-Mario-Question-Coin.ico')
         except TclError:
@@ -40,7 +44,7 @@ class GUI(Tk):
         tab_control = ttk.Notebook(self)
 
         # Blockchaine
-        self.tab_blockchaine = BlockchaineTab(tab_control)
+        self.tab_blockchaine = BlockchaineTab(self, tab_control)
 
         tab_control.add(self.tab_blockchaine, text='BlockChain')
 
@@ -56,23 +60,38 @@ class GUI(Tk):
 
         tab_control.pack(expand=1, fill="both", side=LEFT)
 
-        self.connectIpServer()
+        self.serverIp = '127.0.0.1'
+        self.is_server_ip_valid = False
+        # self.initClient()
+        if self.serverIp is not None:
+            self.initServer()
 
     def connectIpServer(self):
-        is_connected_to_server_id = False
-        if is_connected_to_server_id:
+        if self.is_server_ip_valid:
             self.tab_blockchaine.logger.success('Connexion au server IP réussi')
             self.tab_wallet.logger.success('Connexion au server IP réussi')
         else:
+            self.tab_blockchaine.logger.error('Impossible de se connecter au server ip : ' + self.serverIp)
             self.serverIp = AskIp(self, 'Impossible de contacter le server IP.\n'
                                         'Entrez l\'ip du server x.x.x.x : ').askvalue()
-
             if self.serverIp is None:
                 self.destroy()
                 return
-
             self.tab_option.setIp(self.serverIp)
 
+    def initClient(self):
+        # TODO: a tester avec VM
+        self.client_server_ip = Client(server_ip=self.serverIp, thread_name='server_ip_connection', parent=self)
+        self.client_server_ip.start()
+        while not self.is_server_ip_valid and self.serverIp is not None:
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                f1 = executor.submit(self.client_server_ip.is_connected)
+                self.is_server_ip_valid = f1.result()
 
-fenetre = GUI()
-fenetre.mainloop()
+            self.connectIpServer()
+
+    def initServer(self):
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            node_ip = executor.submit(self.client_server_ip.get_node_ip)
+        self.server = Server(self)
+        self.server.start(node_ip, 8000)

@@ -3,3 +3,4 @@ python-socketio
 aiohttp
 requests
 pymongo
+ttkthemes

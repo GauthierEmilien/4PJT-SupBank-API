@@ -1,7 +1,11 @@
-from threading import Thread, RLock
-import socketio
+from threading import RLock
+from threading import Thread
 from typing import List
+
+import socketio
+
 from blockchain.Blockchain import Blockchain
+from gui import GUI
 
 lock = RLock()
 
@@ -11,13 +15,14 @@ class Client(Thread):
     connected_nodes: List[dict] = []
     block_is_valid: List[bool] = []
 
-    def __init__(self, server_ip: str, thread_name=None, blockchain: Blockchain = None):
+    def __init__(self, server_ip: str, thread_name=None, blockchain: Blockchain = None, parent: GUI = None):
         Thread.__init__(self, name=thread_name)
         self.__sio = socketio.Client()
         self.__server_ip = server_ip  # ip du server ip
         self.__node_ip = ''  # ip du node actuel
         self.__setup_callbacks()
         self.__blockchain = blockchain
+        self.parent = parent
 
     @classmethod
     def send_to_every_nodes(cls, host: str, topic: str, data, disconnect=True, wait=False):
@@ -72,8 +77,14 @@ class Client(Thread):
         self.__sio.disconnect()
 
     def run(self):
-        if self.__server_ip:
+        self.is_connected()
+
+    def is_connected(self):
+        try:
             self.__sio.connect('http://{}:8000'.format(self.__server_ip))
+            return True
+        except:
+            return False
 
     def send_message(self, topic: str, data=None, disconnect: bool = True):
         callback = self.__disconnect if disconnect else None
@@ -84,3 +95,6 @@ class Client(Thread):
 
     def get_node_ip(self):
         return self.__node_ip
+
+    def set_server_ip(self, server_ip: str):
+        self.__server_ip = server_ip

@@ -1,16 +1,17 @@
-import socketio
-from aiohttp import web, web_request
-from threading import Lock
-from random import randrange
-from Cryptodome.PublicKey import RSA
 from datetime import datetime
+from random import randrange
+from threading import Lock
 
-from server.Client import Client
+import socketio
+from Cryptodome.PublicKey import RSA
+from aiohttp import web
+from aiohttp import web_request
 
-from blockchain.Transaction import Transaction
+from blockchain.Block import Block
 from blockchain.Blockchain import Blockchain
 from blockchain.Mining import Mining
-from blockchain.Block import Block
+from blockchain.Transaction import Transaction
+from server.Client import Client
 
 eric_key = RSA.generate(1024)
 alex_key = RSA.generate(1024)
@@ -21,7 +22,7 @@ lock = Lock()
 
 class Server:
 
-    def __init__(self):
+    def __init__(self, parent):
         self.__host = ''
         self.__port = 0
         self.__server = socketio.AsyncServer(async_mode='aiohttp')
@@ -32,6 +33,7 @@ class Server:
         self.__blockchain = Blockchain()
         self.__blockchain.get_update()
         self.__mining = False
+        self.parent = parent
 
     def __setup_callbacks(self):
         self.__server.on('connect', self.__on_connect)
@@ -96,7 +98,8 @@ class Server:
         #     self.__mining_thread.start()
 
     async def __make_transaction(self, _):
-        transaction = Transaction(str(datetime.now()), eric_key.publickey().export_key('DER'), alex_key.publickey().export_key('DER'), 20)
+        transaction = Transaction(str(datetime.now()), eric_key.publickey().export_key('DER'),
+                                  alex_key.publickey().export_key('DER'), 20)
         transaction.sign(eric_key)
 
         Client.send_to_every_nodes(self.__host, 'transaction', transaction.__dict__())
@@ -133,6 +136,8 @@ class Server:
 
     def start_mining(self):
         self.__mining = True
+        self.parent.tab_blockchaine.logger.log('Mining in progress')
 
     def stop_mining(self):
         self.__mining = False
+        self.parent.tab_blockchaine.logger.log('Stop Mining')

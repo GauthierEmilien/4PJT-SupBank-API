@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from tkinter import CENTER
 from tkinter import E
 from tkinter import N
@@ -18,10 +19,12 @@ class BlockchaineTab(TabFrame):
     Création du tab "blockchaine"
     """
 
-    def __init__(self, parent, **args):
+    def __init__(self, parent_gui, parent, **args):
         TabFrame.__init__(self, parent, **args)
         self.pack()
         self.initLogger()
+
+        self.parent = parent_gui
 
         self.miningActions()
         self.pendingTransactions()
@@ -39,12 +42,20 @@ class BlockchaineTab(TabFrame):
                                                command=lambda: self.__buttonStopMiningAction())
 
     def __buttonStartMiningAction(self):
-        self.logger.log('Mining in progress')
-        self.__buttonStartMining.hide()
-        self.__buttonStopMining.show()
+        # self.logger.log('Mining in progress')
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            result = executor.submit(self.parent.server.start_mining)
+        # if result.result() is str:
+        #     self.logger.log('Minnage en cours')
+        # else:
+        #     self.logger.warning('Impossible de miner')
+            self.__buttonStartMining.hide()
+            self.__buttonStopMining.show()
 
     def __buttonStopMiningAction(self):
-        self.logger.log('Stop Mining')
+        # self.logger.log('Stop Mining')
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            result = executor.submit(self.parent.server.stop_mining)
         self.__buttonStopMining.hide()
         self.__buttonStartMining.show()
 
