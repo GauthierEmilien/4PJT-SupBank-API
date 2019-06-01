@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from tkinter import CENTER
 from tkinter import E
 from tkinter import END
@@ -20,12 +21,13 @@ class WalletTab(TabFrame):
     """
 
     def __init__(self, parent, **args):
-        TabFrame.__init__(self, parent, **args)
+        TabFrame.__init__(self, parent.tab_control, **args)
         self.__amount_transaction = ttk.Entry(self, text='')
         self.__private_wallet_key = Text(self, height=5)
         self.__public_key = Text(self, height=5)
         self.__public_key_destinataire = Text(self, height=5)
         self.initLogger()
+        self.parent = parent
 
         # self.privateKeyGroup()
         self.pulicKeyOfUserGroup()
@@ -94,7 +96,7 @@ class WalletTab(TabFrame):
 
     def __getPrivateKeyFile(self, entry_field: Text):
         filepath = askopenfilename(title="Ouvrir une clé privée",
-                                   filetypes=[('pem files', '.pem'), ('all files', '*')])
+                                   filetypes=[('Fichiers pem', '.pem'), ('Tous les fichiers', '*')])
         if filepath:
             with open(filepath) as file:
                 value = file.read()
@@ -103,7 +105,7 @@ class WalletTab(TabFrame):
 
     def __getPublicKeyFile(self, entry_field: Text):
         filepath = askopenfilename(title="Ouvrir uneclé public",
-                                   filetypes=[('pub files', '.pub'), ('all files', '*')])
+                                   filetypes=[('Fichiers pub', '.pub'), ('Tous les fichiers', '*')])
         if filepath:
             with open(filepath) as file:
                 value = file.read()
@@ -117,8 +119,16 @@ class WalletTab(TabFrame):
         self.logger.warning('Création de la transaction')
         self.logger.log('Création de la transaction')
 
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            result = executor.submit(self.parent.server.create_transaction)
+            if result:
+                self.logger.log('Transaction créée')
+            else:
+                self.logger.error('Impossible de créer la transaction')
+
     def __generateKeys(self):
-        if len(self.__private_wallet_key.get("1.0", END)) > 1024 or len(self.__public_key_destinataire.get("1.0", END)) > 1024:
+        if len(self.__private_wallet_key.get("1.0", END)) > 1024 or len(
+                self.__public_key_destinataire.get("1.0", END)) > 1024:
             if not messagebox.askyesno("Question", "Une clé privée/public existe déjà.\n"
                                                    "Générer quand même une nouvelle paire ?"):
                 return

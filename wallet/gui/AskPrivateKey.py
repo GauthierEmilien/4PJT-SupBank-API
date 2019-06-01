@@ -46,7 +46,7 @@ class AskPrivateKey(Ask):
 
     def __getPrivateKeyFile(self, entry_field: Text):
         filepath = askopenfilename(title="Ouvrir une clé privée",
-                                   filetypes=[('pem files', '.pem'), ('all files', '*')])
+                                   filetypes=[('Fichiers pem', '.pem'), ('Tous les fichiers', '*')])
         if filepath:
             with open(filepath) as file:
                 value = file.read()

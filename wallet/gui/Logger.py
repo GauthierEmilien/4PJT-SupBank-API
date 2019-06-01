@@ -6,9 +6,6 @@ from tkinter import ttk
 from wallet.gui.TextAndScrollBar import TextAndScrollBar
 
 
-# TODO: Scroll auto vers le bas pour les logs
-
-
 class Logger(ttk.Frame):
 
     def __init__(self, parent, *args, **kw):
@@ -24,6 +21,7 @@ class Logger(ttk.Frame):
         self.__loggerText.config(state=NORMAL)
         self.__loggerText.insert(END, log + '\n', color)
         self.__loggerText.config(state=DISABLED)
+        self.__loggerText.see(END)
 
     def log(self, log: str):
         self.__commonLog(log, 'log')
