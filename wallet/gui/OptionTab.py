@@ -23,34 +23,34 @@ class OptionTab(TabFrame):
         TabFrame.__init__(self, parent.tab_control, **args)
         self.parent = parent
         self.__ip_server_ip = ttk.Entry(self, width=15, justify=CENTER, validate='all',
-                                        validatecommand=(self.register(self.isValidKeyIp), '%S'))
-        self.setIpServerIP()
+                                        validatecommand=(self.register(self.is_valid_key_ip), '%S'))
+        self.set_ip_server_ip()
 
         self.set_gui_theme()
 
         self.grid_columnconfigure(0, weight=10)
         self.grid_columnconfigure(2, weight=10)
 
-    def setIpServerIP(self):
+    def set_ip_server_ip(self):
         l_ip_server_ip = ttk.Label(self, text='IP du serveurIP', anchor=CENTER)
         l_ip_server_ip.grid(row=0, column=1, sticky=N + S + E + W)
         self.__ip_server_ip.grid(row=1, column=1, sticky=N + S + E + W)
         value = self.__ip_server_ip.get()
-        self.isValidIp(value)
+        self.is_valid_ip(value)
 
-    def isValidIp(self, ip: str):
+    def is_valid_ip(self, ip: str):
         p = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
         if ip:
             self.logger.info(p.match(ip))
             return p.match(ip)
 
     @staticmethod
-    def isValidKeyIp(value: str):
+    def is_valid_key_ip(value: str):
         if value.isdigit() or value == '.':
             return True
         return False
 
-    def setIp(self, ip: str):
+    def set_ip(self, ip: str):
         self.setvar('state', NORMAL)
         self.__ip_server_ip.delete(0, END)
         for v in ip:

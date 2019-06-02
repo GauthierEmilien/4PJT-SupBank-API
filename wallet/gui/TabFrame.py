@@ -12,7 +12,7 @@ class TabFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent, **args)
         self.logger = Logger(self)
 
-    def initLogger(self):
+    def init_logger(self):
         # Mining logs
         self.logger.grid(row=10, column=0, columnspan=4, sticky=S + E + W)
         self.grid_rowconfigure(10, weight=2)

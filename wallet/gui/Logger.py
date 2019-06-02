@@ -17,20 +17,20 @@ class Logger(ttk.Frame):
         self.__loggerText.tag_config("error", foreground="red")
         # self.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
 
-    def __commonLog(self, log: str, color: str):
+    def __common_log(self, log: str, color: str):
         self.__loggerText.config(state=NORMAL)
         self.__loggerText.insert(END, log + '\n', color)
         self.__loggerText.config(state=DISABLED)
         self.__loggerText.see(END)
 
     def log(self, log: str):
-        self.__commonLog(log, 'log')
+        self.__common_log(log, 'log')
 
     def success(self, log: str):
-        self.__commonLog(log, 'success')
+        self.__common_log(log, 'success')
 
     def warning(self, log: str):
-        self.__commonLog(log, 'warning')
+        self.__common_log(log, 'warning')
 
     def error(self, log: str):
-        self.__commonLog(log, 'error')
+        self.__common_log(log, 'error')

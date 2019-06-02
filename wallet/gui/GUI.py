@@ -64,26 +64,26 @@ class GUI(Tk):
         self.generate_or_load_private_key()
         if self.private_key is not None:
             self.tab_wallet.set_key_object(self.private_key)
-            self.initClient()
+            self.init_client()
             # TODO : a decommenter
             # if self.server_ip is not None:
             #     self.initServer()
 
-    def connectIpServer(self):
+    def connect_ip_server(self):
         if self.is_server_ip_valid:
             self.tab_blockchaine.logger.success('Connexion au server IP réussi')
             self.tab_wallet.logger.success('Connexion au server IP réussi')
         else:
             self.tab_blockchaine.logger.error('Impossible de se connecter au server ip : ' + self.server_ip)
             self.server_ip = AskIp(self, title='IP du Server', ask='Impossible de contacter le server IP.\n'
-                                                                   'Entrez l\'ip du server x.x.x.x : ').askvalue()
+                                                                   'Entrez l\'ip du server x.x.x.x : ').get_result()
             if self.server_ip is None:
                 self.destroy()
                 return
-            self.tab_option.setIp(self.server_ip)
+            self.tab_option.set_ip(self.server_ip)
 
     def generate_or_load_private_key(self):
-        self.private_key = AskPrivateKey(self, title='Clé privée').askvalue()
+        self.private_key = AskPrivateKey(self, title='Clé privée').get_result()
         if self.private_key is None:
             self.destroy()
             return
@@ -91,7 +91,7 @@ class GUI(Tk):
         self.tab_blockchaine.logger.success('Clé privée chargée')
         self.tab_wallet.logger.success('Clé privée chargée')
 
-    def initClient(self):
+    def init_client(self):
         self.client_server_ip = Client(server_ip=self.server_ip, thread_name='server_ip_connection', parent=self)
         self.client_server_ip.start()
         while not self.is_server_ip_valid and self.server_ip is not None:
@@ -101,9 +101,9 @@ class GUI(Tk):
                 f1 = executor.submit(self.client_server_ip.is_connected)
                 self.is_server_ip_valid = f1.result()
 
-            self.connectIpServer()
+            self.connect_ip_server()
 
-    def initServer(self):
+    def init_server(self):
         with ThreadPoolExecutor(max_workers=1) as executor:
             node_ip = executor.submit(self.client_server_ip.get_node_ip)
         self.server = Server(self)

@@ -17,7 +17,7 @@ class AskIp(Ask):
     #
     # construction hooks
 
-    def askstring(self, ask: str):
+    def ask_string(self, ask: str):
         frame = ttk.Frame(self)
         frame.grid(row=0, column=0, sticky=N + S + E + W)
         label = ttk.Label(frame, text=ask, anchor=CENTER)

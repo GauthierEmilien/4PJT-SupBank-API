@@ -17,7 +17,7 @@ class Ask(Toplevel):
 
         self.result = None
 
-        self.askstring(ask)
+        self.ask_string(ask)
 
         self.grab_set()
 
@@ -30,7 +30,7 @@ class Ask(Toplevel):
     #
     # construction hooks
 
-    def askstring(self, ask: str):
+    def ask_string(self, ask: str):
         pass
 
     def ok(self, event=None):
@@ -64,5 +64,5 @@ class Ask(Toplevel):
     def apply(self):
         pass  # override
 
-    def askvalue(self):
+    def get_result(self):
         return self.result

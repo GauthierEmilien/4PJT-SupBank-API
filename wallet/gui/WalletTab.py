@@ -31,39 +31,39 @@ class WalletTab(TabFrame):
         self.__key_object = None
         self.__public_key = Text(self, height=5)
         self.__public_key_destinataire = Text(self, height=5)
-        self.initLogger()
+        self.init_logger()
         self.parent = parent
 
         # self.privateKeyGroup()
-        self.pulicKeyOfUserGroup()
+        self.pulic_key_of_user_group()
 
-        self.pulicKeyGroup()
+        self.pulic_key_group()
         # self.generateKeys()
         # self.walletAmount()
-        self.transactionAmount()
-        self.transactionButton()
+        self.transaction_amount()
+        self.transaction_button()
 
         self.grid_columnconfigure(0, weight=4)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
 
-    def privateKeyGroup(self):
+    def private_key_group(self):
         l_private_wallet_key = ttk.Label(self, text='Clé privée', padding=10)
         l_private_wallet_key.grid(row=0, column=0, sticky=N + S + E + W)
 
         self.__private_wallet_key.grid(row=1, column=0, sticky=N + S + E + W)
 
         button_open_private = ttk.Button(self, text='Ouvrir une clé privée', width=25,
-                                         command=lambda: self.__getPrivateKeyFile(self.__private_wallet_key))
+                                         command=lambda: self.__get_private_key_file(self.__private_wallet_key))
         button_open_private.grid(row=1, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
-    def pulicKeyOfUserGroup(self):
+    def pulic_key_of_user_group(self):
         l_public_key = ttk.Label(self, text='Clé public', padding=10)
         l_public_key.grid(row=0, column=0, sticky=N + S + E + W)
 
         self.__public_key.grid(row=1, column=0, sticky=N + S + E + W)
 
-    def walletAmount(self):
+    def wallet_amount(self):
         l_amount_wallet = ttk.Label(self, text='Portefeuille', width=20, anchor=CENTER, padding=10)
         l_amount_wallet.grid(row=0, column=1, columnspan=2, sticky=N + S + E + W)
 
@@ -74,37 +74,37 @@ class WalletTab(TabFrame):
         amount_wallet = ttk.Label(self, text=amount, anchor=CENTER)
         amount_wallet.grid(row=1, column=1, columnspan=2, sticky=N + S + E + W)
 
-    def pulicKeyGroup(self):
+    def pulic_key_group(self):
         l_public_key = ttk.Label(self, text='Clé public destinataire', padding=10)
         l_public_key.grid(row=3, column=0, sticky=N + S + E + W)
 
         self.__public_key_destinataire.grid(row=4, column=0, sticky=N + S + E + W)
 
         button_open_public = ttk.Button(self, text='Ouvrir une clé public', width=25,
-                                        command=lambda: self.__getPublicKeyFile(self.__public_key_destinataire))
+                                        command=lambda: self.__get_public_key_file(self.__public_key_destinataire))
         button_open_public.grid(row=4, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
-    def generateKeys(self):
+    def generate_keys(self):
         # Générer une paire de clé
         l_key_gen = ttk.Label(self, text='Générer une paire de clé', width=20, anchor=CENTER, padding=10)
         l_key_gen.grid(row=0, column=2, sticky=N + S + E + W)
 
-        key_gen = ttk.Button(self, text='Générer une paire de clé', width=25, command=lambda: self.__generateKeys())
+        key_gen = ttk.Button(self, text='Générer une paire de clé', width=25, command=lambda: self.__generate_keys())
         key_gen.grid(row=1, column=2, padx=5, pady=5, sticky=N + S + E + W)
 
-    def transactionAmount(self):
+    def transaction_amount(self):
         l_amount_transaction = ttk.Label(self, text='Montant de la transaction', anchor=CENTER, padding=10)
         l_amount_transaction.grid(row=3, column=2, padx=5)
         self.__amount_transaction.grid(row=4, column=2)
 
-    def transactionButton(self):
+    def transaction_button(self):
         button_valid_transaction = ttk.Button(self, text='Valider la transaction',
-                                              command=lambda: self.__createTransaction(self.__private_wallet_key,
-                                                                                       self.__public_key_destinataire,
-                                                                                       self.__amount_transaction))
+                                              command=lambda: self.__create_transaction(self.__private_wallet_key,
+                                                                                        self.__public_key_destinataire,
+                                                                                        self.__amount_transaction))
         button_valid_transaction.grid(row=7, column=0, columnspan=3, padx=5, pady=5, sticky=N + S + E + W)
 
-    def __getPrivateKeyFile(self, entry_field: Text):
+    def __get_private_key_file(self, entry_field: Text):
         filepath = askopenfilename(title="Ouvrir une clé privée",
                                    filetypes=[('Fichiers pem', '.pem'), ('Tous les fichiers', '*')])
         if filepath:
@@ -113,7 +113,7 @@ class WalletTab(TabFrame):
                 entry_field.delete('1.0', END)
                 entry_field.insert(INSERT, value)
 
-    def __getPublicKeyFile(self, entry_field: Text):
+    def __get_public_key_file(self, entry_field: Text):
         filepath = askopenfilename(title="Ouvrir uneclé public",
                                    filetypes=[('Fichiers pub', '.pub'), ('Tous les fichiers', '*')])
         if filepath:
@@ -122,7 +122,7 @@ class WalletTab(TabFrame):
                 entry_field.delete('1.0', END)
                 entry_field.insert(INSERT, value)
 
-    def __createTransaction(self, private_key: Text, public_key: Text, amount: Entry):
+    def __create_transaction(self, private_key: Text, public_key: Text, amount: Entry):
         self.logger.log('Création de la transaction')
 
         with ThreadPoolExecutor(max_workers=1) as executor:
@@ -133,7 +133,7 @@ class WalletTab(TabFrame):
             else:
                 self.logger.error('Impossible de créer la transaction')
 
-    def __generateKeys(self):
+    def __generate_keys(self):
         if len(self.__private_wallet_key.get("1.0", END)) > 1024 or len(
                 self.__public_key_destinataire.get("1.0", END)) > 1024:
             if not messagebox.askyesno("Question", "Une clé privée/public existe déjà.\n"
