@@ -1,16 +1,20 @@
 from concurrent.futures import ThreadPoolExecutor
 from tkinter import CENTER
+from tkinter import DISABLED
 from tkinter import E
 from tkinter import END
 from tkinter import Entry
 from tkinter import INSERT
 from tkinter import N
+from tkinter import NORMAL
 from tkinter import S
 from tkinter import Text
 from tkinter import W
 from tkinter import messagebox
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename
+
+from Cryptodome.PublicKey import RSA
 
 from wallet.gui.TabFrame import TabFrame
 
@@ -24,6 +28,7 @@ class WalletTab(TabFrame):
         TabFrame.__init__(self, parent.tab_control, **args)
         self.__amount_transaction = ttk.Entry(self, text='')
         self.__private_wallet_key = Text(self, height=5)
+        self.__key_object = None
         self.__public_key = Text(self, height=5)
         self.__public_key_destinataire = Text(self, height=5)
         self.initLogger()
@@ -34,7 +39,7 @@ class WalletTab(TabFrame):
 
         self.pulicKeyGroup()
         # self.generateKeys()
-        self.walletAmount()
+        # self.walletAmount()
         self.transactionAmount()
         self.transactionButton()
 
@@ -61,7 +66,12 @@ class WalletTab(TabFrame):
     def walletAmount(self):
         l_amount_wallet = ttk.Label(self, text='Portefeuille', width=20, anchor=CENTER, padding=10)
         l_amount_wallet.grid(row=0, column=1, columnspan=2, sticky=N + S + E + W)
-        amount_wallet = ttk.Label(self, text='200', anchor=CENTER)
+
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            result = executor.submit(self.parent.server.get_wallet_from_public_key, self.__public_key.get('1.0', END))
+            amount = result.result()
+
+        amount_wallet = ttk.Label(self, text=amount, anchor=CENTER)
         amount_wallet.grid(row=1, column=1, columnspan=2, sticky=N + S + E + W)
 
     def pulicKeyGroup(self):
@@ -70,9 +80,9 @@ class WalletTab(TabFrame):
 
         self.__public_key_destinataire.grid(row=4, column=0, sticky=N + S + E + W)
 
-        # button_open_public = ttk.Button(self, text='Ouvrir une clé public', width=25,
-        #                                 command=lambda: self.__getPublicKeyFile(self.__public_key))
-        # button_open_public.grid(row=4, column=1, padx=5, pady=5, sticky=N + S + E + W)
+        button_open_public = ttk.Button(self, text='Ouvrir une clé public', width=25,
+                                        command=lambda: self.__getPublicKeyFile(self.__public_key_destinataire))
+        button_open_public.grid(row=4, column=1, padx=5, pady=5, sticky=N + S + E + W)
 
     def generateKeys(self):
         # Générer une paire de clé
@@ -84,8 +94,8 @@ class WalletTab(TabFrame):
 
     def transactionAmount(self):
         l_amount_transaction = ttk.Label(self, text='Montant de la transaction', anchor=CENTER, padding=10)
-        l_amount_transaction.grid(row=3, column=1, columnspan=2, padx=5)
-        self.__amount_transaction.grid(row=4, column=1, columnspan=2)
+        l_amount_transaction.grid(row=3, column=2, padx=5)
+        self.__amount_transaction.grid(row=4, column=2)
 
     def transactionButton(self):
         button_valid_transaction = ttk.Button(self, text='Valider la transaction',
@@ -114,13 +124,10 @@ class WalletTab(TabFrame):
 
     def __createTransaction(self, private_key: Text, public_key: Text, amount: Entry):
         self.logger.log('Création de la transaction')
-        self.logger.success('Création de la transaction')
-        self.logger.error('Création de la transaction')
-        self.logger.warning('Création de la transaction')
-        self.logger.log('Création de la transaction')
 
         with ThreadPoolExecutor(max_workers=1) as executor:
-            result = executor.submit(self.parent.server.create_transaction)
+            result = executor.submit(self.parent.server.create_transaction, private_key.get('1.0', END),
+                                     public_key.get('1.0', END), amount.get())
             if result:
                 self.logger.log('Transaction créée')
             else:
@@ -141,3 +148,10 @@ class WalletTab(TabFrame):
         self.__public_key_destinataire.insert(INSERT, 'Clé public')
 
         self.logger.log('Fin de la génération des clés')
+
+    def set_key_object(self, private_key: str):
+        self.key_object = RSA.import_key(private_key)
+        self.__public_key.config(state=NORMAL)
+        self.__public_key.delete('1.0', END)
+        self.__public_key.insert(INSERT, self.key_object.publickey().export_key())
+        self.__public_key.config(state=DISABLED)

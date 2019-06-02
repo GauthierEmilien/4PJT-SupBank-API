@@ -5,6 +5,7 @@ from tkinter import END
 from tkinter import N
 from tkinter import NORMAL
 from tkinter import S
+from tkinter import SUNKEN
 from tkinter import W
 from tkinter import ttk
 
@@ -56,7 +57,7 @@ class OptionTab(TabFrame):
             self.__ip_server_ip.insert(0, v)
 
     def set_gui_theme(self):
-        frame = ttk.Frame(self, borderwidth=5)
+        frame = ttk.Frame(self, padding=5, relief=SUNKEN)
         frame.grid(row=2, column=1, sticky=N + S + E + W)
 
         l_ip_server_ip = ttk.Label(frame, text='Changer le mode', anchor=CENTER)

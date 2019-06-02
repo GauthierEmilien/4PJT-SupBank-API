@@ -6,6 +6,8 @@ from tkinter import S
 from tkinter import W
 from tkinter import ttk
 
+from blockchain.Transaction import Transaction
+from gui.TransactionFrame import TransactionFrame
 from wallet.gui.MiningButton import MiningButton
 from wallet.gui.TabFrame import TabFrame
 from wallet.gui.TextAndScrollBar import TextAndScrollBar
@@ -59,9 +61,16 @@ class BlockchaineTab(TabFrame):
     def pendingTransactions(self):
         label_pending = ttk.Label(self, text='Transactions en attente', anchor=CENTER, padding=10)
         label_pending.grid(row=2, column=0, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
-        pending_transactions_frame = ttk.Frame(self)
-        pending_transactions_frame.grid(row=3, column=0, rowspan=6, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
-        pending_transactions = TextAndScrollBar(pending_transactions_frame, state='disabled')
+        transactions = []
+        transactions.append(Transaction('1231232', b'from: blablabla', b'to: blablabla', 666))
+        transactions.append(Transaction('1234655', b'from: blablabla', b'to: blablabla', 666))
+        transactions.append(Transaction('1235789', b'from: blablabla', b'to: blablabla', 666))
+        transactions_frame = TransactionFrame(self)
+        transactions_frame.show_transactions(transactions)
+        transactions_frame.grid(row=3, column=0, rowspan=6, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
+
+        # pending_transactions_frame.grid(row=3, column=0, rowspan=6, columnspan=4, padx=5, pady=5, sticky=N + S + E + W)
+        # pending_transactions = TextAndScrollBar(pending_transactions_frame, state='disabled')
 
     def generatedBlocks(self):
         label_blocks = ttk.Label(self, text='Blocks généré', anchor=CENTER, padding=10)

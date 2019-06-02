@@ -141,3 +141,10 @@ class Server:
     def stop_mining(self):
         self.__mining = False
         self.parent.tab_blockchaine.logger.log('Stop Mining')
+
+    def create_transation(self, private: str, public: str, amount: int):
+        pass
+
+    def get_wallet_from_public_key(self, public_key:str):
+
+        return 200

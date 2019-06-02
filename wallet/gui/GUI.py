@@ -63,6 +63,7 @@ class GUI(Tk):
 
         self.generate_or_load_private_key()
         if self.private_key is not None:
+            self.tab_wallet.set_key_object(self.private_key)
             self.initClient()
             # TODO : a decommenter
             # if self.server_ip is not None:
