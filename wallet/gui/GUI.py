@@ -111,5 +111,5 @@ class GUI(Tk):
     def __init_server(self):
         with ThreadPoolExecutor(max_workers=1) as executor:
             node_ip = executor.submit(self.client_server_ip.get_node_ip)
-        self.server = Server(self)
-        self.server.start(node_ip.result(), 8000)
+            self.server = Server(self)
+            self.server.launch(node_ip.result(), 8000)

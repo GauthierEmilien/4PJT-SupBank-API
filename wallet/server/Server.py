@@ -1,11 +1,12 @@
 from datetime import datetime
 from random import randrange
-from threading import Lock
+from threading import Lock, Thread
 
 import socketio
 from Cryptodome.PublicKey import RSA
 from aiohttp import web
 from aiohttp import web_request
+import asyncio
 
 from blockchain.Block import Block
 from blockchain.Blockchain import Blockchain
@@ -20,9 +21,10 @@ my_key = RSA.generate(1024)
 lock = Lock()
 
 
-class Server:
+class Server(Thread):
 
     def __init__(self, parent):
+        Thread.__init__(self, daemon=True)
         self.__host = ''
         self.__port = 0
         self.__server = socketio.AsyncServer(async_mode='aiohttp')
@@ -125,14 +127,18 @@ class Server:
             except Exception as e:
                 print('error => {}'.format(e))
 
-    def start(self, host: str, port: int):
-        self.__host = host
-        self.__port = port
+    def run(self):
         try:
+            asyncio.set_event_loop(asyncio.new_event_loop())
             # self.__update_blockchain(None)
-            web.run_app(self.__app, host=host, port=port)
+            web.run_app(self.__app, host=self.__host, port=self.__port)
         except Exception as e:
             print('error from class Server =>', e)
+
+    def launch(self, host: str, port: int):
+        self.__host = host
+        self.__port = port
+        self.start()
 
     def start_mining(self):
         self.__mining = True
@@ -145,6 +151,6 @@ class Server:
     def create_transation(self, private: str, public: str, amount: int):
         pass
 
-    def get_wallet_from_public_key(self, public_key:str):
+    def get_wallet_from_public_key(self, public_key: str):
 
         return 200
