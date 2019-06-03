@@ -70,7 +70,9 @@ class GUI(Tk):
             self.__init_client()
             # TODO : a decommenter
             if self.__server_ip is not None:
-                self.__initServer()
+                self.__init_server()
+                if self.server is not None:
+                    self.tab_wallet.set_wallet_amount()
 
     def __popup_connect_ip_server(self):
         if self.__is_server_ip_valid:
@@ -110,4 +112,4 @@ class GUI(Tk):
         with ThreadPoolExecutor(max_workers=1) as executor:
             node_ip = executor.submit(self.client_server_ip.get_node_ip)
         self.server = Server(self)
-        self.server.start(node_ip, 8000)
+        self.server.start(node_ip.result(), 8000)
