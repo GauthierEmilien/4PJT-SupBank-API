@@ -1,15 +1,11 @@
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from random import randrange
 from threading import Lock
-from threading import Thread
 
 import flask
 import socketio
 from Cryptodome.PublicKey import RSA
 from aiohttp import web
-from aiohttp import web_request
 
 from blockchain.Block import Block
 from blockchain.Blockchain import Blockchain
@@ -27,12 +23,8 @@ lock = Lock()
 class Server:
 
     def __init__(self, parent):
-        # Thread.__init__(self, daemon=True)
         self.__host = ''
         self.__port = 0
-        # self.__server = socketio.AsyncServer(async_mode='aiohttp')
-        # self.__app = web.Application()
-        # self.__server.attach(self.__app)
         self.__server = socketio.Server(async_mode='threading')
         self.__app = flask.Flask(__name__)
         self.__app.wsgi_app = socketio.WSGIApp(self.__server, self.__app.wsgi_app)
@@ -42,7 +34,6 @@ class Server:
         self.__update_blockchain()
         self.__mining = False
         self.parent = parent
-        # self.__handler = self.__app.make_handler()
 
     def __setup_callbacks(self):
         self.__server.on('connect', self.__on_connect)
@@ -135,30 +126,10 @@ class Server:
         else:
             print('no nodes')
 
-    def run(self):
-        try:
-            # asyncio.set_event_loop(asyncio.new_event_loop())
-            # self.__update_blockchain(None)
-            web.run_app(self.__app, host=self.__host, port=self.__port)
-        except Exception as e:
-            print('error from class Server =>', e)
-
-    # @asyncio.coroutine
-    def launch(self, host: str, port: int):
+    def start(self, host: str, port: int):
         self.__host = host
         self.__port = port
-
-        # with ThreadPoolExecutor(max_workers=1) as executor:
-        #     executor.submit(self.__update_blockchain())
-        # self.start()
         try:
-            # asyncio.set_event_loop(asyncio.get_event_loop())
-            # loop = asyncio.get_event_loop()
-            # yield from loop.create_server()
-            # loop = asyncio.get_event_loop()
-            # yield from loop.
-            # self.__update_blockchain()
-            # web.run_app(self.__app, host=self.__host, port=self.__port)
             self.__app.run(host=host, port=port, threaded=True)
         except Exception as e:
             print('error from class Server =>', e)
@@ -177,6 +148,3 @@ class Server:
     def get_wallet_from_public_key(self, public_key: str):
 
         return 200
-
-    # def get_handler(self):
-    #     return self.__handler

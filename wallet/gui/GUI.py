@@ -1,6 +1,5 @@
 from _tkinter import TclError
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 from threading import Thread
 from tkinter import LEFT
 from tkinter import Tk
@@ -16,9 +15,6 @@ from server.Server import Server
 from wallet.gui.BlockchainTab import BlockchainTab
 from wallet.gui.OptionTab import OptionTab
 from wallet.gui.WalletTab import WalletTab
-
-import asyncio
-
 
 # TODO: Gerer les bonnes actions sur les boutons
 # TODO: Améliorer le responsive
@@ -118,28 +114,7 @@ class GUI(Tk):
             while len(Client.nodes_info) == 0:
                 continue
 
-        # ioloop = asyncio.new_event_loop()
-
         self.server = Server(self)
 
-        # @asyncio.coroutine
-        # def __connect():
-        #     loop = asyncio.get_event_loop()
-        #     yield from loop.create_server(lambda: self, node_ip.result(), 8000)
-        #
-        # def __run_server(loop):
-        #     asyncio.set_event_loop(loop)
-        #     loop.run_forever()
-        #     print('======server is running========')
-        #
-        # ioloop = asyncio.new_event_loop()
-        # asyncio.run_coroutine_threadsafe(__connect(), loop=ioloop)
-        # t = Thread(target=partial(__run_server, ioloop))
-        # t.start()
-
-        t = Thread(target=self.server.launch, args=(node_ip.result(), 8000))
+        t = Thread(target=self.server.start, args=(node_ip.result(), 8000), daemon=True)
         t.start()
-
-
-
-        # self.server.launch(node_ip.result(), 8000)
