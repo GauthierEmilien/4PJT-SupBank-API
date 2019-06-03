@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from random import randrange
 from threading import Lock
@@ -22,10 +23,10 @@ my_key = RSA.generate(1024)
 lock = Lock()
 
 
-class Server(Thread):
+class Server():
 
     def __init__(self, parent):
-        Thread.__init__(self, daemon=True)
+        # Thread.__init__(self, daemon=True)
         self.__host = ''
         self.__port = 0
         self.__server = socketio.AsyncServer(async_mode='aiohttp')
@@ -109,8 +110,8 @@ class Server(Thread):
         await self.__on_transaction('local', transaction.__dict__())
         return web.Response(text="Message sent to all connected nodes")
 
-    def __update_blockchain(self, _):
-        print('update blockchain')
+    def __update_blockchain(self):
+        print('update blockchain', Client.nodes_info)
         lock.acquire()
         print(self.__host)
         nodes_info = [c for c in Client.nodes_info if not c.get('host') == self.__host]
@@ -130,16 +131,28 @@ class Server(Thread):
 
     def run(self):
         try:
-            asyncio.set_event_loop(asyncio.new_event_loop())
+            # asyncio.set_event_loop(asyncio.new_event_loop())
             # self.__update_blockchain(None)
             web.run_app(self.__app, host=self.__host, port=self.__port)
         except Exception as e:
             print('error from class Server =>', e)
 
+    @asyncio.coroutine
     def launch(self, host: str, port: int):
         self.__host = host
         self.__port = port
-        self.start()
+
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(self.__update_blockchain())
+        # self.start()
+        try:
+            asyncio.set_event_loop(asyncio.get_event_loop())
+            # loop = asyncio.get_event_loop()
+            # yield from loop.
+            # self.__update_blockchain()
+            web.run_app(self.__app, host=self.__host, port=self.__port)
+        except Exception as e:
+            print('error from class Server =>', e)
 
     def start_mining(self):
         self.__mining = True
