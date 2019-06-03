@@ -36,6 +36,6 @@ class AskIp(Ask):
     # command hooks
 
     def validate(self):
-        p = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
+        p = re.compile(r'^(\d{1,3}\.){3}\d{1,3}$')
 
         return p.match(self.result)  # override
