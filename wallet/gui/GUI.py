@@ -8,6 +8,7 @@ from ttkthemes import ThemedStyle
 
 from gui.AskIp import AskIp
 from gui.AskPrivateKey import AskPrivateKey
+from gui.ClickActions import ClickActions
 from server.Client import Client
 from server.Server import Server
 from wallet.gui.BlockchaineTab import BlockchaineTab
@@ -28,8 +29,6 @@ class GUI(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.style = ThemedStyle(self)
-        # self.style.set_theme("arc")
-        # style.set_theme("equilux")
         self.title('XatomeCoin')
         self.configure(bg='white')
         # self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -58,31 +57,35 @@ class GUI(Tk):
 
         self.tab_control.pack(expand=1, fill="both", side=LEFT)
 
-        self.server_ip = '127.0.0.1'
-        self.is_server_ip_valid = False
+        # Right click
+        ClickActions().r_clickbinder(self)
 
-        self.generate_or_load_private_key()
+        # Config
+        self.__server_ip = '127.0.0.1'
+        self.__is_server_ip_valid = False
+
+        self.__popup_generate_or_load_private_key()
         if self.private_key is not None:
             self.tab_wallet.set_key_object(self.private_key)
-            self.init_client()
+            self.__init_client()
             # TODO : a decommenter
-            # if self.server_ip is not None:
-            #     self.initServer()
+            if self.__server_ip is not None:
+                self.__initServer()
 
-    def connect_ip_server(self):
-        if self.is_server_ip_valid:
+    def __popup_connect_ip_server(self):
+        if self.__is_server_ip_valid:
             self.tab_blockchaine.logger.success('Connexion au server IP réussi')
             self.tab_wallet.logger.success('Connexion au server IP réussi')
         else:
-            self.tab_blockchaine.logger.error('Impossible de se connecter au server ip : ' + self.server_ip)
-            self.server_ip = AskIp(self, title='IP du Server', ask='Impossible de contacter le server IP.\n'
-                                                                   'Entrez l\'ip du server x.x.x.x : ').get_result()
-            if self.server_ip is None:
+            self.tab_blockchaine.logger.error('Impossible de se connecter au server ip : ' + self.__server_ip)
+            self.__server_ip = AskIp(self, title='IP du Server', ask='Impossible de contacter le server IP.\n'
+                                                                     'Entrez l\'ip du server x.x.x.x : ').get_result()
+            if self.__server_ip is None:
                 self.destroy()
                 return
-            self.tab_option.set_ip(self.server_ip)
+            self.tab_option.set_ip(self.__server_ip)
 
-    def generate_or_load_private_key(self):
+    def __popup_generate_or_load_private_key(self):
         self.private_key = AskPrivateKey(self, title='Clé privée').get_result()
         if self.private_key is None:
             self.destroy()
@@ -91,19 +94,19 @@ class GUI(Tk):
         self.tab_blockchaine.logger.success('Clé privée chargée')
         self.tab_wallet.logger.success('Clé privée chargée')
 
-    def init_client(self):
-        self.client_server_ip = Client(server_ip=self.server_ip, thread_name='server_ip_connection', parent=self)
+    def __init_client(self):
+        self.client_server_ip = Client(server_ip=self.__server_ip, thread_name='server_ip_connection', parent=self)
         self.client_server_ip.start()
-        while not self.is_server_ip_valid and self.server_ip is not None:
+        while not self.__is_server_ip_valid and self.__server_ip is not None:
             with ThreadPoolExecutor(max_workers=1) as executor:
-                executor.submit(self.client_server_ip.set_server_ip, self.server_ip)
+                executor.submit(self.client_server_ip.set_server_ip, self.__server_ip)
                 self.client_server_ip.wait()
                 f1 = executor.submit(self.client_server_ip.is_connected)
-                self.is_server_ip_valid = f1.result()
+                self.__is_server_ip_valid = f1.result()
 
-            self.connect_ip_server()
+            self.__popup_connect_ip_server()
 
-    def init_server(self):
+    def __init_server(self):
         with ThreadPoolExecutor(max_workers=1) as executor:
             node_ip = executor.submit(self.client_server_ip.get_node_ip)
         self.server = Server(self)
