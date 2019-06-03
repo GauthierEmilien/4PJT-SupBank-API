@@ -1,12 +1,13 @@
+import asyncio
 from datetime import datetime
 from random import randrange
-from threading import Lock, Thread
+from threading import Lock
+from threading import Thread
 
 import socketio
 from Cryptodome.PublicKey import RSA
 from aiohttp import web
 from aiohttp import web_request
-import asyncio
 
 from blockchain.Block import Block
 from blockchain.Blockchain import Blockchain
@@ -142,11 +143,11 @@ class Server(Thread):
 
     def start_mining(self):
         self.__mining = True
-        self.parent.tab_blockchaine.logger.log('Mining in progress')
+        self.parent.tab_blockchain.logger.log('Mining in progress')
 
     def stop_mining(self):
         self.__mining = False
-        self.parent.tab_blockchaine.logger.log('Stop Mining')
+        self.parent.tab_blockchain.logger.log('Stop Mining')
 
     def create_transation(self, private: str, public: str, amount: int):
         pass

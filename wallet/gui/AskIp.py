@@ -25,6 +25,7 @@ class AskIp(Ask):
 
         entry = ttk.Entry(frame, text='')
         entry.grid()
+        entry.focus()
 
         button_ok = ttk.Button(frame, text='Valider', command=lambda: self.ok(entry.get()))
         button_ok.grid()
