@@ -113,22 +113,31 @@ class GUI(Tk):
             self.__popup_connect_ip_server()
 
     def __init_server(self):
-
-        def _run(loop):
-            asyncio.set_event_loop(loop)
-            loop.run_forever()
-
         with ThreadPoolExecutor(max_workers=1) as executor:
             node_ip = executor.submit(self.client_server_ip.get_node_ip)
             while len(Client.nodes_info) == 0:
                 continue
 
-        ioloop = asyncio.new_event_loop()
+        # ioloop = asyncio.new_event_loop()
 
         self.server = Server(self)
 
-        asyncio.run_coroutine_threadsafe(self.server.launch(node_ip.result(), 8000), loop=ioloop)
-        t = Thread(target=partial(_run, ioloop), daemon=True)
+        # @asyncio.coroutine
+        # def __connect():
+        #     loop = asyncio.get_event_loop()
+        #     yield from loop.create_server(lambda: self, node_ip.result(), 8000)
+        #
+        # def __run_server(loop):
+        #     asyncio.set_event_loop(loop)
+        #     loop.run_forever()
+        #     print('======server is running========')
+        #
+        # ioloop = asyncio.new_event_loop()
+        # asyncio.run_coroutine_threadsafe(__connect(), loop=ioloop)
+        # t = Thread(target=partial(__run_server, ioloop))
+        # t.start()
+
+        t = Thread(target=self.server.launch, args=(node_ip.result(), 8000))
         t.start()
 
 
