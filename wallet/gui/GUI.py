@@ -17,7 +17,6 @@ from wallet.gui.WalletTab import WalletTab
 
 # TODO: Gerer les bonnes actions sur les boutons
 # TODO: Améliorer le responsive
-# TODO: Changer les couleurs de l'interface
 # TODO améliorer les class
 
 
@@ -29,7 +28,7 @@ class GUI(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.style = ThemedStyle(self)
-        self.style.set_theme("arc")
+        # self.style.set_theme("arc")
         # style.set_theme("equilux")
         self.title('XatomeCoin')
         self.configure(bg='white')
@@ -53,6 +52,7 @@ class GUI(Tk):
 
         # Options
         self.tab_option = OptionTab(self)
+        self.tab_option.set_theme_jour()
 
         self.tab_control.add(self.tab_option, text='Options')
 

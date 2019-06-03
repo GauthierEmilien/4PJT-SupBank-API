@@ -1,5 +1,6 @@
 import re
 from tkinter import CENTER
+from tkinter import DISABLED
 from tkinter import E
 from tkinter import END
 from tkinter import N
@@ -12,8 +13,6 @@ from tkinter import ttk
 from wallet.gui.TabFrame import TabFrame
 
 
-# TODO : Finir le mode nuit
-
 class OptionTab(TabFrame):
     """
     Création du tab "Portefeuille"
@@ -23,40 +22,52 @@ class OptionTab(TabFrame):
         TabFrame.__init__(self, parent.tab_control, **args)
         self.parent = parent
         self.__ip_server_ip = ttk.Entry(self, width=15, justify=CENTER, validate='all',
-                                        validatecommand=(self.register(self.is_valid_key_ip), '%S'))
-        self.set_ip_server_ip()
+                                        validatecommand=(self.register(self.__is_valid_key_ip), '%S'))
+        self.__ip_server_ip_group()
 
-        self.set_gui_theme()
+        self.__gui_theme_group_buttons()
 
         self.grid_columnconfigure(0, weight=10)
         self.grid_columnconfigure(2, weight=10)
 
-    def set_ip_server_ip(self):
+    """
+    IP part
+    """
+
+    def __ip_server_ip_group(self):
         l_ip_server_ip = ttk.Label(self, text='IP du serveurIP', anchor=CENTER)
         l_ip_server_ip.grid(row=0, column=1, sticky=N + S + E + W)
         self.__ip_server_ip.grid(row=1, column=1, sticky=N + S + E + W)
         value = self.__ip_server_ip.get()
-        self.is_valid_ip(value)
+        self.__is_valid_ip(value)
 
-    def is_valid_ip(self, ip: str):
+    def __is_valid_ip(self, ip: str):
         p = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
         if ip:
             self.logger.info(p.match(ip))
             return p.match(ip)
 
-    @staticmethod
-    def is_valid_key_ip(value: str):
+    def __is_valid_key_ip(self, value: str):
         if value.isdigit() or value == '.':
             return True
         return False
 
     def set_ip(self, ip: str):
-        self.setvar('state', NORMAL)
-        self.__ip_server_ip.delete(0, END)
+        self.__ip_server_ip.config(state=NORMAL)
+        self.__delete_ip()
         for v in ip:
-            self.__ip_server_ip.insert(0, v)
+            self.__ip_server_ip.insert(END, v)
+        self.__ip_server_ip.config(state=DISABLED)
 
-    def set_gui_theme(self):
+    def __delete_ip(self):
+        for i in range(len(self.__ip_server_ip.get())):
+            self.__ip_server_ip.delete(0)
+
+    """
+    Theme part
+    """
+
+    def __gui_theme_group_buttons(self):
         frame = ttk.Frame(self, padding=5, relief=SUNKEN)
         frame.grid(row=2, column=1, sticky=N + S + E + W)
 
@@ -74,7 +85,15 @@ class OptionTab(TabFrame):
 
     def set_theme_jour(self):
         self.parent.style.set_theme('arc')
+        self.__set_text_widget_theme(self.parent.winfo_children(), background='white', foreground='grey')
 
     def set_theme_nuit(self):
         self.parent.style.set_theme('equilux')
-        # self.parent.configure(bg='black', background="black", foreground="white")
+        self.__set_text_widget_theme(self.parent.winfo_children(), background='#464646', foreground='#9a9a9a')
+
+    def __set_text_widget_theme(self, childs, **args):
+        for child in childs:
+            if child.widgetName == 'ttk::frame' or child.widgetName == 'ttk::notebook':
+                self.__set_text_widget_theme(child.winfo_children(), **args)
+            if child.widgetName == 'text':
+                child.configure({**args})
