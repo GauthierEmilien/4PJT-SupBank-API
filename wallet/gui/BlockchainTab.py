@@ -17,12 +17,10 @@ class BlockchainTab(TabFrame):
     Création du tab "blockchain"
     """
 
-    def __init__(self, parent_gui, parent, **args):
+    def __init__(self, parent, **args):
         TabFrame.__init__(self, parent, **args)
         self.pack()
         self.init_logger()
-
-        self.parent = parent_gui
 
         self.__mining_actions()
         self.pending_transactions()
@@ -47,7 +45,7 @@ class BlockchainTab(TabFrame):
             #     self.logger.log('Minnage en cours')
             # else:
             #     self.logger.warning('Impossible de miner')
-        self.parent.server.start_mining()
+        self.master.master.server.start_mining()
         self.__buttonStartMining.hide()
         self.__buttonStopMining.show()
 
@@ -55,7 +53,7 @@ class BlockchainTab(TabFrame):
         # self.logger.log('Stop Mining')
         # with ThreadPoolExecutor(max_workers=1) as executor:
         #     result = executor.submit(self.parent.server.stop_mining)
-        self.parent.server.stop_mining()
+        self.master.master.server.stop_mining()
         self.__buttonStopMining.hide()
         self.__buttonStartMining.show()
 

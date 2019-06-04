@@ -16,6 +16,7 @@ from wallet.gui.BlockchainTab import BlockchainTab
 from wallet.gui.OptionTab import OptionTab
 from wallet.gui.WalletTab import WalletTab
 
+
 # TODO: Gerer les bonnes actions sur les boutons
 # TODO: Améliorer le responsive
 # TODO améliorer les class
@@ -40,12 +41,12 @@ class GUI(Tk):
         self.tab_control = ttk.Notebook(self)
 
         # Blockchain
-        self.tab_blockchain = BlockchainTab(self, self.tab_control)
+        self.tab_blockchain = BlockchainTab(self.tab_control)
 
         self.tab_control.add(self.tab_blockchain, text='BlockChain')
 
         # Wallet
-        self.tab_wallet = WalletTab(self)
+        self.tab_wallet = WalletTab(self.tab_control)
 
         self.tab_control.add(self.tab_wallet, text='Portefeuille')
 
