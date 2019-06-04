@@ -3,7 +3,7 @@ from tkinter import END
 from tkinter import NORMAL
 from tkinter import ttk
 
-from wallet.gui.TextAndScrollBar import TextAndScrollBar
+from gui.TextAndScrollBar import TextAndScrollBar
 
 
 class Logger(ttk.Frame):

@@ -3,7 +3,7 @@ from tkinter import S
 from tkinter import W
 from tkinter import ttk
 
-from wallet.gui.Logger import Logger
+from gui.Logger import Logger
 
 
 class TabFrame(ttk.Frame):

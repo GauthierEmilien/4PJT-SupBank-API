@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from tkinter import CENTER
 from tkinter import DISABLED
 from tkinter import E
@@ -15,7 +14,7 @@ from tkinter.filedialog import askopenfilename
 
 from Cryptodome.PublicKey import RSA
 
-from wallet.gui.TabFrame import TabFrame
+from gui.TabFrame import TabFrame
 
 
 class WalletTab(TabFrame):
@@ -59,12 +58,9 @@ class WalletTab(TabFrame):
         self.amount_wallet.grid(row=1, column=1, columnspan=2, sticky=N + S + E + W)
 
     def set_wallet_amount(self):
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            result = executor.submit(self.master.master.server.get_wallet_from_public_key,
-                                     self.__public_key.get('1.0', END))
-            amount = result.result()
+        amount = self.master.master.server.get_wallet_from_public_key(self.__key_object.publickey().export_key('DER'))
 
-        self.amount_wallet.setvar('text', amount)
+        self.amount_wallet.configure(text=amount)
 
     def pulic_key_target_group(self):
         l_public_key = ttk.Label(self, text='Clé public destinataire', padding=10)
