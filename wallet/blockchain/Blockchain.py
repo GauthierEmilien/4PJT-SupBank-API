@@ -84,3 +84,6 @@ class Blockchain:  # Add Thread inheritance for multithreading
             t = Transaction.from_dict(transaction)
             if t in self.__pending_transaction:
                 self.__pending_transaction.remove(t)
+
+    def __dict__(self):
+        return {'blockchain': [b.__dict__() for b in self.__chain]}

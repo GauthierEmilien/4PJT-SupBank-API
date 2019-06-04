@@ -96,6 +96,9 @@ class Server:
         #     self.__mining_thread = Mining(global_var.xatome_money, self.__mining_thread.get_reward_address())
         #     self.__mining_thread.start()
 
+    async def __return_blockchain(self, _):
+        return web.json_response(self.__blockchain.__dict__())
+
     async def __make_transaction(self, _):
         transaction = Transaction(str(datetime.now()), eric_key.publickey().export_key('DER'),
                                   alex_key.publickey().export_key('DER'), 20)
