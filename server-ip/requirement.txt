@@ -2,3 +2,4 @@ python-socketio
 aiohttp
 netifaces
 pymongo
+PyInquirer
