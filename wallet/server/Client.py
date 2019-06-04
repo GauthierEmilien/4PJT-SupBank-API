@@ -69,8 +69,7 @@ class Client(Thread):
 
     def __on_block(self, is_valid: str):
         print('GET VALIDATION =>', is_valid)
-        with lock:
-            Client.block_is_valid.append(is_valid)
+        Client.block_is_valid.append(is_valid)
         self.__disconnect()
 
     def __disconnect(self):

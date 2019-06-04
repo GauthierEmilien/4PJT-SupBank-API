@@ -5,17 +5,12 @@ from threading import Lock
 import flask
 import socketio
 from Cryptodome.PublicKey import RSA
-from aiohttp import web
 
 from blockchain.Block import Block
 from blockchain.Blockchain import Blockchain
 from blockchain.Mining import Mining
 from blockchain.Transaction import Transaction
 from server.Client import Client
-
-eric_key = RSA.generate(1024)
-alex_key = RSA.generate(1024)
-my_key = RSA.generate(1024)
 
 lock = Lock()
 
@@ -67,7 +62,8 @@ class Server:
         print('{} pending transaction(s)'.format(len(self.__blockchain.get_pending_transaction())))
         if self.__mining and len(self.__blockchain.get_pending_transaction()) >= 5:
             if self.__mining_thread is None or (self.__mining_thread and not self.__mining_thread.is_alive()):
-                self.__mining_thread = Mining(self.__blockchain, my_key.publickey().export_key('DER'), self.__host)
+                private_key = self.parent.tab_wallet.get_key_object()
+                self.__mining_thread = Mining(self.__blockchain, private_key.publickey().export_key('DER'), self.__host)
 
     def __on_blockchain(self, sid):
         print('SEND BLOCKCHAIN TO => {}'.format(sid))
@@ -100,14 +96,15 @@ class Server:
     def __return_blockchain(self):
         return flask.jsonify(self.__blockchain.__dict__())
 
-    async def __make_transaction(self, _):
-        transaction = Transaction(str(datetime.now()), eric_key.publickey().export_key('DER'),
-                                  alex_key.publickey().export_key('DER'), 20)
-        transaction.sign(eric_key)
+    def make_transaction(self, key_from: RSA.RsaKey, key_to: str, amount: int):
+        print(bytes(key_to, 'utf-8'))
+        transaction = Transaction(str(datetime.now()), key_from.publickey().export_key('DER'),
+                                  bytes(key_to, 'utf-8'), amount)
+        transaction.sign(key_from)
 
         Client.send_to_every_nodes(self.__host, 'transaction', transaction.__dict__())
-        await self.__on_transaction('local', transaction.__dict__())
-        return web.Response(text="Message sent to all connected nodes")
+        self.__on_transaction('local', transaction.__dict__())
+        # return web.Response(text="Message sent to all connected nodes")
 
     def __update_blockchain(self):
         print('update blockchain', Client.nodes_info)
@@ -144,9 +141,6 @@ class Server:
     def stop_mining(self):
         self.__mining = False
         self.parent.tab_blockchain.logger.log('Stop Mining')
-
-    def create_transation(self, private: str, public: str, amount: int):
-        pass
 
     def get_wallet_from_public_key(self, public_key: str):
 
