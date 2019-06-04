@@ -142,6 +142,5 @@ class Server:
         self.__mining = False
         self.parent.tab_blockchain.logger.log('Stop Mining')
 
-    def get_wallet_from_public_key(self, public_key: str):
-
-        return 200
+    def get_wallet_from_public_key(self, public_key: bytes):
+        return self.__blockchain.get_balance(public_key)

@@ -9,12 +9,12 @@ from ttkthemes import ThemedStyle
 
 from gui.AskIp import AskIp
 from gui.AskPrivateKey import AskPrivateKey
+from gui.BlockchainTab import BlockchainTab
 from gui.ClickActions import ClickActions
+from gui.OptionTab import OptionTab
+from gui.WalletTab import WalletTab
 from server.Client import Client
 from server.Server import Server
-from wallet.gui.BlockchainTab import BlockchainTab
-from wallet.gui.OptionTab import OptionTab
-from wallet.gui.WalletTab import WalletTab
 
 
 # TODO: Gerer les bonnes actions sur les boutons

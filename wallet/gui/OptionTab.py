@@ -10,7 +10,7 @@ from tkinter import SUNKEN
 from tkinter import W
 from tkinter import ttk
 
-from wallet.gui.TabFrame import TabFrame
+from gui.TabFrame import TabFrame
 
 
 class OptionTab(TabFrame):

@@ -6,10 +6,10 @@ from tkinter import W
 from tkinter import ttk
 
 from blockchain.Transaction import Transaction
+from gui.MiningButton import MiningButton
+from gui.TabFrame import TabFrame
+from gui.TextAndScrollBar import TextAndScrollBar
 from gui.TransactionFrame import TransactionFrame
-from wallet.gui.MiningButton import MiningButton
-from wallet.gui.TabFrame import TabFrame
-from wallet.gui.TextAndScrollBar import TextAndScrollBar
 
 
 class BlockchainTab(TabFrame):
