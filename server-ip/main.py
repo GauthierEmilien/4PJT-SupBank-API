@@ -1,5 +1,6 @@
 import socketio
 from aiohttp import web, web_request, ClientSession
+import aiohttp_cors
 from typing import List
 import netifaces as ni
 from PyInquirer import prompt
@@ -9,18 +10,20 @@ from database import DB
 
 sio = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
-routes = web.RouteTableDef()
+cors = aiohttp_cors.setup(app, defaults={
+    '*': aiohttp_cors.ResourceOptions(allow_credentials=True, expose_headers='*', allow_headers='*')
+})
 sio.attach(app)
 
 nodes: List[dict] = []
 database = DB('xatomeDB')
 
-@routes.post('/login')
+
 async def login(request: web_request.Request):
     print(request)
     return web.json_response({'coucou': 'bonjour'})
 
-@routes.post('/register')
+
 async def register(request: web_request.Request):
     user: dict = await request.json()
     existing_user = database.get_one('users', {'email': user.get('email')})
@@ -31,7 +34,7 @@ async def register(request: web_request.Request):
         database.insert('users', user)
         return web.json_response(res)
 
-@routes.get('/blockchain')
+
 async def get_blockchain(_):
     if len(nodes) > 0:
         index = 0 if len(nodes) == 1 else randrange(len(nodes))
@@ -45,7 +48,19 @@ async def get_blockchain(_):
     return web.Response(text='no nodes connected')
 
 
-app.add_routes(routes)
+async def get_network(_):
+    return web.json_response({'network': [node.get('host') for node in nodes]})
+
+
+blockchain_resource = cors.add(app.router.add_resource('/blockchain'))
+cors.add(blockchain_resource.add_route('GET', get_blockchain))
+
+register_resource = cors.add(app.router.add_resource('/register'))
+cors.add(register_resource.add_route('POST', register))
+
+network_resource = cors.add(app.router.add_resource('/network'))
+cors.add(network_resource.add_route('GET', get_network))
+
 
 @sio.on('connect')
 async def connect(sid, environ: dict):

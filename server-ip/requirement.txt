@@ -1,5 +1,6 @@
 python-socketio
 aiohttp
+aiohttp-cors
 netifaces
 pymongo
 PyInquirer
