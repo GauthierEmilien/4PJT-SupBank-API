@@ -66,12 +66,18 @@ class Mining(Thread):
 
         is_block_accepted = True
 
-        lock.acquire()
-        for is_valid in Client.block_is_valid:
-            if is_valid == 'false':
+        # lock.acquire()
+        # for is_valid in Client.block_is_valid:
+        #     if is_valid == 'false':
+        #         print('block not accepted')
+        #         is_block_accepted = False
+        # lock.release()
+
+        while not Client.block_is_valid_queue.empty():
+            if Client.block_is_valid_queue.get() == 'false':
                 print('block not accepted')
                 is_block_accepted = False
-        lock.release()
+                Client.block_is_valid_queue.task_done()
 
         if not is_block_accepted:
             Client.send_to_every_nodes(self.__host, 'block_accepted', 'false')

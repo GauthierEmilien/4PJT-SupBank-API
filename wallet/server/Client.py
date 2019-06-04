@@ -1,3 +1,4 @@
+from queue import Queue
 from threading import RLock
 from threading import Thread
 from typing import List
@@ -8,12 +9,14 @@ from blockchain.Blockchain import Blockchain
 from gui import GUI
 
 lock = RLock()
+queue = Queue()
 
 
 class Client(Thread):
     nodes_info: List[dict] = []
     connected_nodes: List[dict] = []
     block_is_valid: List[bool] = []
+    block_is_valid_queue = Queue()
 
     def __init__(self, server_ip: str, thread_name=None, blockchain: Blockchain = None, parent: GUI = None):
         Thread.__init__(self, name=thread_name)
@@ -69,7 +72,9 @@ class Client(Thread):
 
     def __on_block(self, is_valid: str):
         print('GET VALIDATION =>', is_valid)
-        Client.block_is_valid.append(is_valid)
+        Client.block_is_valid_queue.put(is_valid)
+        Client.block_is_valid_queue.task_done()
+        # Client.block_is_valid.append(is_valid)
         self.__disconnect()
 
     def __disconnect(self):
