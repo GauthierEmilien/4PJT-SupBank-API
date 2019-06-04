@@ -20,7 +20,7 @@ class Client(Thread):
 
     def __init__(self, server_ip: str, thread_name=None, blockchain: Blockchain = None, parent: GUI = None):
         Thread.__init__(self, name=thread_name)
-        self.__sio = socketio.Client(reconnection=False)
+        self.__sio = socketio.Client()
         self.__server_ip = server_ip  # ip du server ip
         self.__node_ip = ''  # ip du node actuel
         self.__setup_callbacks()
