@@ -114,7 +114,7 @@ class GUI(Tk):
             while len(Client.nodes_info) == 0:
                 continue
 
-        self.server = Server(self)
+        self.server = Server(self, node_ip.result(), 8000)
 
-        t = Thread(target=self.server.start, args=(node_ip.result(), 8000), daemon=True)
+        t = Thread(target=self.server.start, daemon=True)
         t.start()
