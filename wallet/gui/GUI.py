@@ -1,5 +1,6 @@
 from _tkinter import TclError
 from concurrent.futures import ThreadPoolExecutor
+from threading import Thread
 from tkinter import LEFT
 from tkinter import Tk
 from tkinter import ttk
@@ -11,10 +12,9 @@ from gui.AskPrivateKey import AskPrivateKey
 from gui.ClickActions import ClickActions
 from server.Client import Client
 from server.Server import Server
-from wallet.gui.BlockchaineTab import BlockchaineTab
+from wallet.gui.BlockchainTab import BlockchainTab
 from wallet.gui.OptionTab import OptionTab
 from wallet.gui.WalletTab import WalletTab
-
 
 # TODO: Gerer les bonnes actions sur les boutons
 # TODO: Améliorer le responsive
@@ -39,10 +39,10 @@ class GUI(Tk):
 
         self.tab_control = ttk.Notebook(self)
 
-        # Blockchaine
-        self.tab_blockchaine = BlockchaineTab(self, self.tab_control)
+        # Blockchain
+        self.tab_blockchain = BlockchainTab(self, self.tab_control)
 
-        self.tab_control.add(self.tab_blockchaine, text='BlockChain')
+        self.tab_control.add(self.tab_blockchain, text='BlockChain')
 
         # Wallet
         self.tab_wallet = WalletTab(self)
@@ -76,10 +76,10 @@ class GUI(Tk):
 
     def __popup_connect_ip_server(self):
         if self.__is_server_ip_valid:
-            self.tab_blockchaine.logger.success('Connexion au server IP réussi')
+            self.tab_blockchain.logger.success('Connexion au server IP réussi')
             self.tab_wallet.logger.success('Connexion au server IP réussi')
         else:
-            self.tab_blockchaine.logger.error('Impossible de se connecter au server ip : ' + self.__server_ip)
+            self.tab_blockchain.logger.error('Impossible de se connecter au server ip : ' + self.__server_ip)
             self.__server_ip = AskIp(self, title='IP du Server', ask='Impossible de contacter le server IP.\n'
                                                                      'Entrez l\'ip du server x.x.x.x : ').get_result()
             if self.__server_ip is None:
@@ -93,7 +93,7 @@ class GUI(Tk):
             self.destroy()
             return
 
-        self.tab_blockchaine.logger.success('Clé privée chargée')
+        self.tab_blockchain.logger.success('Clé privée chargée')
         self.tab_wallet.logger.success('Clé privée chargée')
 
     def __init_client(self):
@@ -111,5 +111,10 @@ class GUI(Tk):
     def __init_server(self):
         with ThreadPoolExecutor(max_workers=1) as executor:
             node_ip = executor.submit(self.client_server_ip.get_node_ip)
-            self.server = Server(self)
-            self.server.launch(node_ip.result(), 8000)
+            while len(Client.nodes_info) == 0:
+                continue
+
+        self.server = Server(self)
+
+        t = Thread(target=self.server.start, args=(node_ip.result(), 8000), daemon=True)
+        t.start()

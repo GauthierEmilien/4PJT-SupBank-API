@@ -22,7 +22,7 @@ class Blockchain:  # Add Thread inheritance for multithreading
         self.__chain = []
         for block in block_cursor:
             self.__chain.append(Block.from_dict(block))
-        print(self.__chain)
+        print('blockchain', self.__chain)
 
     def update_all(self, blocks: List[dict]):
         Blockchain.DB.delete_all(block_collection)
