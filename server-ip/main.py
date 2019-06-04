@@ -1,15 +1,51 @@
 import socketio
-from aiohttp import web, web_request
+from aiohttp import web, web_request, ClientSession
 from typing import List
 import netifaces as ni
 from PyInquirer import prompt
+from random import randrange
+
+from database import DB
 
 sio = socketio.AsyncServer(async_mode='aiohttp')
 app = web.Application()
+routes = web.RouteTableDef()
 sio.attach(app)
 
 nodes: List[dict] = []
+database = DB('xatomeDB')
 
+@routes.post('/login')
+async def login(request: web_request.Request):
+    print(request)
+    return web.json_response({'coucou': 'bonjour'})
+
+@routes.post('/register')
+async def register(request: web_request.Request):
+    user: dict = await request.json()
+    existing_user = database.get_one('users', {'email': user.get('email')})
+    if existing_user:
+        return web.json_response({'error': 'User already exists in database'})
+    else:
+        res = user.copy()
+        database.insert('users', user)
+        return web.json_response(res)
+
+@routes.get('/blockchain')
+async def get_blockchain(_):
+    if len(nodes) > 0:
+        index = 0 if len(nodes) == 1 else randrange(len(nodes))
+        async with ClientSession() as session:
+            async with session.get('http://' + nodes[index].get('host') + ':8000/blockchain') as resp:
+                print('resp type', type(resp))
+                chain = await resp.json()
+                print('chain', chain)
+
+        return web.json_response(chain)
+    return web.Response(text='no nodes connected')
+
+
+app.add_routes(routes)
 
 @sio.on('connect')
 async def connect(sid, environ: dict):

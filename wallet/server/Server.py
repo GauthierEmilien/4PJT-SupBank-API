@@ -22,9 +22,9 @@ lock = Lock()
 
 class Server:
 
-    def __init__(self, parent):
-        self.__host = ''
-        self.__port = 0
+    def __init__(self, parent, host: str, port: int):
+        self.__host = host
+        self.__port = port
         self.__server = socketio.Server(async_mode='threading')
         self.__app = flask.Flask(__name__)
         self.__app.wsgi_app = socketio.WSGIApp(self.__server, self.__app.wsgi_app)
@@ -42,6 +42,7 @@ class Server:
         self.__server.on('blockchain', self.__on_blockchain)
         self.__server.on('block', self.__on_block)
         self.__server.on('block_accepted', self.__on_block_accepted)
+        self.__app.route('/blockchain', methods=['GET'])(self.__return_blockchain)
         # self.__app.router.add_get('/transaction', self.__make_transaction)
 
     def __on_connect(self, sid, environ: dict):
@@ -96,6 +97,9 @@ class Server:
         #     self.__mining_thread = Mining(global_var.xatome_money, self.__mining_thread.get_reward_address())
         #     self.__mining_thread.start()
 
+    def __return_blockchain(self):
+        return flask.jsonify(self.__blockchain.__dict__())
+
     async def __make_transaction(self, _):
         transaction = Transaction(str(datetime.now()), eric_key.publickey().export_key('DER'),
                                   alex_key.publickey().export_key('DER'), 20)
@@ -108,7 +112,7 @@ class Server:
     def __update_blockchain(self):
         print('update blockchain', Client.nodes_info)
         lock.acquire()
-        print(self.__host)
+        print('host', self.__host)
         nodes_info = [c for c in Client.nodes_info if not c.get('host') == self.__host]
         print('nodeinfo', nodes_info)
         lock.release()
@@ -125,12 +129,11 @@ class Server:
                 print('error => {}'.format(e))
         else:
             print('no nodes')
+        self.__blockchain.get_update()
 
-    def start(self, host: str, port: int):
-        self.__host = host
-        self.__port = port
+    def start(self):
         try:
-            self.__app.run(host=host, port=port, threaded=True)
+            self.__app.run(host=self.__host, port=self.__port, threaded=True)
         except Exception as e:
             print('error from class Server =>', e)
 
