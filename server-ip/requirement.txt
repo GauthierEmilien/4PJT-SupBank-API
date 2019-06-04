@@ -3,4 +3,3 @@ aiohttp
 aiohttp-cors
 netifaces
 pymongo
-PyInquirer

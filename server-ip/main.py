@@ -3,7 +3,6 @@ from aiohttp import web, web_request, ClientSession
 import aiohttp_cors
 from typing import List
 import netifaces as ni
-from PyInquirer import prompt
 from random import randrange
 
 from database import DB
@@ -101,22 +100,7 @@ def choose_ip_address(ip_addresses: List[str]) -> str:
 
 if __name__ == '__main__':
     ip_addresses = get_ip_addresses()
-    ip_server = ''
-
-    try:
-        questions: List[dict] = [
-            {
-                'type': 'list',
-                'name': 'ip',
-                'message': 'Choose your wifi card ip',
-                'choices': ip_addresses
-            }
-        ]
-
-        answers = prompt(questions)
-        ip_server = answers.get('ip')
-    except:
-        ip_server = choose_ip_address(ip_addresses)
+    ip_server = choose_ip_address(ip_addresses)
 
     print(ip_server)
 
