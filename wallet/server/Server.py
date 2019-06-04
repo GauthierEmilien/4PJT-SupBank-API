@@ -63,7 +63,9 @@ class Server:
         if self.__mining and len(self.__blockchain.get_pending_transaction()) >= 5:
             if self.__mining_thread is None or (self.__mining_thread and not self.__mining_thread.is_alive()):
                 private_key = self.parent.tab_wallet.get_key_object()
-                self.__mining_thread = Mining(self.__blockchain, private_key.publickey().export_key('DER'), self.__host)
+                self.__mining_thread = Mining(self.__blockchain, private_key.publickey().export_key('DER'), self.__host,
+                                              self.parent)
+                self.parent.update()
 
     def __on_blockchain(self, sid):
         print('SEND BLOCKCHAIN TO => {}'.format(sid))
@@ -87,6 +89,7 @@ class Server:
         if block != 'false':
             self.__blockchain.add_block(block)
             self.__blockchain.clear_pending_transaction(block.get('transactions'))
+            self.parent.update()
         # else:
         #     print('restart mining')
         #     from Mining import Mining
@@ -97,14 +100,14 @@ class Server:
         return flask.jsonify(self.__blockchain.__dict__())
 
     def make_transaction(self, key_from: RSA.RsaKey, key_to: str, amount: int):
-        print(bytes(key_to, 'utf-8'))
+        print('key_to', bytes(key_to, 'utf-8'))
         transaction = Transaction(str(datetime.now()), key_from.publickey().export_key('DER'),
                                   bytes(key_to, 'utf-8'), amount)
         transaction.sign(key_from)
 
         Client.send_to_every_nodes(self.__host, 'transaction', transaction.__dict__())
         self.__on_transaction('local', transaction.__dict__())
-        # return web.Response(text="Message sent to all connected nodes")
+        self.parent.update()
 
     def __update_blockchain(self):
         print('update blockchain', Client.nodes_info)
@@ -136,11 +139,14 @@ class Server:
 
     def start_mining(self):
         self.__mining = True
-        self.parent.tab_blockchain.logger.log('Mining in progress')
+        self.parent.tab_blockchain.logger.log('Minnage en cours')
 
     def stop_mining(self):
         self.__mining = False
-        self.parent.tab_blockchain.logger.log('Stop Mining')
+        self.parent.tab_blockchain.logger.log('Arrêt du minnage')
 
-    def get_wallet_from_public_key(self, public_key: bytes):
+    def get_balance_from_public_key(self, public_key: bytes):
         return self.__blockchain.get_balance(public_key)
+
+    def get_pending_transactions(self):
+        return self.__blockchain.get_pending_transaction()

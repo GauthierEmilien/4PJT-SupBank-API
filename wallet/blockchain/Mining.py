@@ -1,9 +1,10 @@
-from threading import Thread, Lock
 import datetime
 import json
+from threading import Lock
+from threading import Thread
 
-from blockchain.Blockchain import Blockchain
 from blockchain.Block import Block
+from blockchain.Blockchain import Blockchain
 from server.Client import Client
 
 lock = Lock()
@@ -11,12 +12,13 @@ lock = Lock()
 
 class Mining(Thread):
 
-    def __init__(self, blockchain: Blockchain, reward_address: bytes, host: str):
+    def __init__(self, blockchain: Blockchain, reward_address: bytes, host: str, gui):
         Thread.__init__(self)
         self.__blockchain = blockchain
         self.__host = host
         self.__reward_address = reward_address
         self.__stop = False
+        self.__gui = gui
         transactions = []
         for t in self.__blockchain.get_pending_transaction():
             transactions.append(t)
@@ -89,6 +91,7 @@ class Mining(Thread):
             self.__blockchain.add_block(block)
             self.__blockchain.get_update()
             print('accepted block')
+            self.__gui.update()
 
     def get_reward_address(self) -> bytes:
         return self.__reward_address

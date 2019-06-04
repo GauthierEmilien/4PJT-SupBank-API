@@ -1,7 +1,8 @@
-from blockchain.Transaction import Transaction
-from blockchain.Block import Block
-from typing import List
 from threading import Lock
+from typing import List
+
+from blockchain.Block import Block
+from blockchain.Transaction import Transaction
 from .database import DB
 
 lock = Lock()
@@ -64,11 +65,17 @@ class Blockchain:  # Add Thread inheritance for multithreading
                 # dont check the first block
                 continue
             for transaction in block.get_transactions():
-                if transaction.get_from_wallet() == wallet_address:
-                    balance -= transaction.get_amount()
-                if transaction.get_to_wallet() == wallet_address:
-                    balance += transaction.get_amount()
+                balance += self.__get_balance_from_transactions(transaction, wallet_address)
+        for transaction in self.__pending_transaction:
+            balance += self.__get_balance_from_transactions(transaction, wallet_address)
         return balance
+
+    def __get_balance_from_transactions(self, transaction, wallet_address) -> int:
+        if transaction.get_from_wallet() == wallet_address:
+            return -transaction.get_amount()
+        if transaction.get_to_wallet() == wallet_address:
+            return transaction.get_amount()
+        return 0
 
     def get_pending_transaction(self) -> List[Transaction]:
         return self.__pending_transaction

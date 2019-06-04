@@ -7,19 +7,14 @@ from tkinter import ttk
 
 from ttkthemes import ThemedStyle
 
-from gui.AskIp import AskIp
-from gui.AskPrivateKey import AskPrivateKey
-from gui.BlockchainTab import BlockchainTab
 from gui.ClickActions import ClickActions
-from gui.OptionTab import OptionTab
-from gui.WalletTab import WalletTab
+from gui.TabBlockchain import BlockchainTab
+from gui.TabOption import OptionTab
+from gui.TabWallet import WalletTab
+from gui.ask.AskIp import AskIp
+from gui.ask.AskPrivateKey import AskPrivateKey
 from server.Client import Client
 from server.Server import Server
-
-
-# TODO: Gerer les bonnes actions sur les boutons
-# TODO: Améliorer le responsive
-# TODO améliorer les class
 
 
 class GUI(Tk):
@@ -29,9 +24,9 @@ class GUI(Tk):
 
     def __init__(self):
         Tk.__init__(self)
+        self.geometry('1200x600')
         self.style = ThemedStyle(self)
         self.title('XatomeCoin')
-        self.configure(bg='white')
         # self.protocol("WM_DELETE_WINDOW", self.on_closing)
         try:
             self.iconbitmap(r'./ressources/Ph03nyx-Super-Mario-Question-Coin.ico')
@@ -69,7 +64,6 @@ class GUI(Tk):
         if self.private_key is not None:
             self.tab_wallet.set_key_object(self.private_key)
             self.__init_client()
-            # TODO : a decommenter
             if self.__server_ip is not None:
                 self.__init_server()
                 if self.server is not None:
@@ -119,3 +113,8 @@ class GUI(Tk):
 
         t = Thread(target=self.server.start, daemon=True)
         t.start()
+
+    def update(self):
+        self.tab_wallet.set_wallet_amount()
+        pending_transactions = self.server.get_pending_transactions()
+        self.tab_blockchain.set_pending_transactions(pending_transactions)

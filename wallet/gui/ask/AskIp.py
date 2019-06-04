@@ -1,12 +1,9 @@
 import re
 from tkinter import CENTER
-from tkinter import E
-from tkinter import N
-from tkinter import S
-from tkinter import W
+from tkinter import NSEW
 from tkinter import ttk
 
-from gui.Ask import Ask
+from gui.ask.Ask import Ask
 
 
 class AskIp(Ask):
@@ -19,7 +16,7 @@ class AskIp(Ask):
 
     def ask_string(self, ask: str):
         frame = ttk.Frame(self)
-        frame.grid(row=0, column=0, sticky=N + S + E + W)
+        frame.grid(row=0, column=0, sticky=NSEW)
         label = ttk.Label(frame, text=ask, anchor=CENTER)
         label.grid()
 
