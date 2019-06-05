@@ -16,7 +16,6 @@ class Blockchain:  # Add Thread inheritance for multithreading
         self.__chain: List[Block] = []
         self.__difficulty: int = 5
         self.__pending_transaction: List[Transaction] = []
-        self.__reward = 10
 
     def get_update(self):  # Get the last version of the blockchain from database
         block_cursor = Blockchain.DB.get_all(block_collection)
@@ -70,7 +69,7 @@ class Blockchain:  # Add Thread inheritance for multithreading
             balance = self.__get_balance_from_transactions(balance, transaction, wallet_address)
         return balance
 
-    def __get_balance_from_transactions(self, balance, transaction, wallet_address) -> int:
+    def __get_balance_from_transactions(self, balance: int, transaction: Transaction, wallet_address: bytes) -> int:
         if transaction.get_from_wallet() == wallet_address:
             balance -= transaction.get_amount()
         if transaction.get_to_wallet() == wallet_address:
@@ -79,6 +78,16 @@ class Blockchain:  # Add Thread inheritance for multithreading
 
     def get_pending_transaction(self) -> List[Transaction]:
         return self.__pending_transaction
+
+    def is_public_key_in_blockchain(self, public_key: bytes):
+        for block in self.__chain:
+            if block.get_previous_block() == "":
+                # dont check the first block
+                continue
+            for transaction in block.get_transactions():
+                if transaction.get_from_wallet() == public_key or transaction.get_to_wallet() == public_key:
+                    return True
+        return False
 
     def get_blocks(self) -> List[Block]:
         return self.__chain
