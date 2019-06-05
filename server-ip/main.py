@@ -20,8 +20,9 @@ database = DB('xatomeDB')
 
 async def login(request: web_request.Request):
     credentials: dict = await request.json()
-    existing_user = database.get_one('users', {'_email': credentials.get('_email')})
+    existing_user: dict = database.get_one('users', {'_email': credentials.get('_email')})
     if existing_user and credentials.get('_password') == existing_user.get('_password'):
+        existing_user.pop('_id', None)
         return web.json_response(existing_user)
     return web.json_response({'error': 'User does\'nt exists'})
 
