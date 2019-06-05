@@ -1,10 +1,13 @@
-import datetime
 import json
+from datetime import datetime
 from threading import Lock
 from threading import Thread
 
+from Cryptodome.PublicKey import RSA
+
 from blockchain.Block import Block
 from blockchain.Blockchain import Blockchain
+from blockchain.Transaction import Transaction
 from server.Client import Client
 
 lock = Lock()
@@ -12,21 +15,27 @@ lock = Lock()
 
 class Mining(Thread):
 
-    def __init__(self, blockchain: Blockchain, reward_address: bytes, host: str, gui):
+    def __init__(self, blockchain: Blockchain, reward_address: RSA.RsaKey, host: str, gui):
         Thread.__init__(self)
         self.__blockchain = blockchain
         self.__host = host
         self.__reward_address = reward_address
         self.__stop = False
         self.__gui = gui
+        self.__reward_amount = 10
         transactions = []
         for t in self.__blockchain.get_pending_transaction():
             transactions.append(t)
-        self.__new_block = Block(str(datetime.datetime.now()), transactions)
+        self.__new_block = Block(str(datetime.now()), transactions)
         self.start()
 
     def run(self) -> None:
         print('start mining')
+        reward_key = RSA.generate(1024)
+        reward_transaction = Transaction(str(datetime.now()), reward_key.publickey().export_key('DER'), self.__reward_address.publickey().export_key('DER'), self.__reward_amount)
+        reward_transaction.sign(reward_key)
+        self.__new_block.add_transaction(reward_transaction)
+
         for trans in self.__new_block.get_transactions():
             if not trans.verify():
                 self.__new_block.remove_transaction(trans)

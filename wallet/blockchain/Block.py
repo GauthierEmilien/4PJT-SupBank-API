@@ -1,6 +1,7 @@
 import hashlib
-from blockchain.Transaction import Transaction
 from typing import List
+
+from blockchain.Transaction import Transaction
 
 
 class Block:
@@ -31,6 +32,9 @@ class Block:
     def get_transactions(self) -> List[Transaction]:
         return self.__transactions
 
+    def add_transaction(self, transaction: Transaction):
+        self.__transactions.append(transaction)
+
     def remove_transaction(self, transaction: Transaction):
         self.__transactions.remove(transaction)
         print('removed transactions', self.__transactions)
@@ -44,11 +48,11 @@ class Block:
     def set_previous_block(self, hash: str):
         self.__previous_block = hash
 
-    def __dict__(self) -> dict: # return a dict from a Block object
+    def __dict__(self) -> dict:  # return a dict from a Block object
         return {
-            'hash': self.__hash,
-            'nonce': self.__nonce,
-            'timestamp': self.__timestamp,
-            'transactions': [t.__dict__() for t in self.__transactions],
+            'hash':           self.__hash,
+            'nonce':          self.__nonce,
+            'timestamp':      self.__timestamp,
+            'transactions':   [t.__dict__() for t in self.__transactions],
             'previous_block': self.__previous_block
         }
