@@ -19,13 +19,16 @@ database = DB('xatomeDB')
 
 
 async def login(request: web_request.Request):
-    print(request)
-    return web.json_response({'coucou': 'bonjour'})
+    credentials: dict = await request.json()
+    existing_user = database.get_one('users', {'_email': credentials.get('_email')})
+    if existing_user and credentials.get('_password') == existing_user.get('_password'):
+        return web.json_response(existing_user)
+    return web.json_response({'error': 'User does\'nt exists'})
 
 
 async def register(request: web_request.Request):
     user: dict = await request.json()
-    existing_user = database.get_one('users', {'email': user.get('email')})
+    existing_user = database.get_one('users', {'_email': user.get('_email')})
     if existing_user:
         return web.json_response({'error': 'User already exists in database'})
     else:
@@ -53,6 +56,9 @@ async def get_network(_):
 
 blockchain_resource = cors.add(app.router.add_resource('/blockchain'))
 cors.add(blockchain_resource.add_route('GET', get_blockchain))
+
+login_resource = cors.add(app.router.add_resource('/login'))
+cors.add(login_resource.add_route('POST', login))
 
 register_resource = cors.add(app.router.add_resource('/register'))
 cors.add(register_resource.add_route('POST', register))

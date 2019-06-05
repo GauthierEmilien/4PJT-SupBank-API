@@ -74,8 +74,7 @@ class WalletTab(TabFrame):
 
     def transaction_button(self):
         button_valid_transaction = ttk.Button(self, text='Valider la transaction',
-                                              command=lambda: self.__create_transaction(self.__private_wallet_key,
-                                                                                        self.__public_key_destinataire,
+                                              command=lambda: self.__create_transaction(self.__public_key_destinataire,
                                                                                         self.__amount_transaction))
         button_valid_transaction.grid(row=7, column=0, columnspan=3, padx=5, pady=5, sticky=NSEW)
 
@@ -88,7 +87,7 @@ class WalletTab(TabFrame):
                 entry_field.delete('1.0', END)
                 entry_field.insert(INSERT, value)
 
-    def __create_transaction(self, private_key: Text, public_key: Text, amount: Entry):
+    def __create_transaction(self, public_key: Text, amount: Entry):
         str_public_key = public_key.get('1.0', END)
         str_amount = amount.get()
 
@@ -96,8 +95,6 @@ class WalletTab(TabFrame):
             self.logger.log('Création de la transaction')
             self.master.master.server.make_transaction(self.__key_object, str_public_key, int(str_amount))
             self.set_wallet_amount()
-        else:
-            self.logger.error('Impossible de valider la transaction, champs invalides')
 
     def set_key_object(self, private_key: str):
         self.__key_object = RSA.import_key(private_key)
@@ -110,11 +107,19 @@ class WalletTab(TabFrame):
         return self.__key_object
 
     def __is_valid_transaction(self, public_key: str, amount: str) -> bool:
-        return self.__is_valid_amount(amount) and self.__is_valid_public_key(public_key) and self.__has_enounght(
-            int(amount))
+        if not self.__is_valid_amount(amount):
+            self.logger.error('Champs invalides')
+            return False
+        if not self.__is_valid_public_key(public_key):
+            self.logger.error('Vous ne pouvez pas créer de transaction pour vous-même')
+            return False
+        if not self.__has_enounght(int(amount)):
+            self.logger.error('Vos fonds sont insuffisants')
+            return False
+        return True
 
     def __is_valid_amount(self, value: str) -> bool:
-        p = re.compile(r'\d+([.,]\d+)?')
+        p = re.compile(r'^\d+([.,]\d+)?$')
         if p.match(value):
             return True
         return False
@@ -125,9 +130,6 @@ class WalletTab(TabFrame):
     def __is_valid_public_key(self, value: str) -> bool:
         try:
             to_pub_key = RSA.import_key(value).export_key('DER')
-            if to_pub_key == self.__key_object.publickey().export_key('DER'):
-                self.logger.error('Vous ne pouvez pas créer de transaction pour vous-même')
-                return False
-            return True
+            return to_pub_key == self.__key_object.publickey().export_key('DER')
         except Exception:
             return False

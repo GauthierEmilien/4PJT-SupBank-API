@@ -8,8 +8,9 @@ print(sys.platform)
 
 options = {'build_exe': {
     # 'path': sys.path,
-    'packages': ['asyncio', 'requests', 'engineio.async_drivers.threading'],
-    'includes': ['idna.idnadata']
+    'packages': ['asyncio', 'requests', 'engineio.async_drivers.threading', 'websocket'],
+    'includes': ['idna.idnadata'],
+    'include_msvcr': True
 }
 }
 exe = Executable('main.py')
@@ -20,7 +21,9 @@ if sys.platform == 'win32':
 
     options['build_exe']['include_files'] = [
         os.path.join(PYTHON_INSTALL_DIR, 'DLLs', 'tk86t.dll'),
-        os.path.join(PYTHON_INSTALL_DIR, 'DLLs', 'tcl86t.dll')
+        os.path.join(PYTHON_INSTALL_DIR, 'DLLs', 'tcl86t.dll'),
+        os.path.join(PYTHON_INSTALL_DIR, 'DLLs', 'libcrypto-1_1.dll'),
+        os.path.join(PYTHON_INSTALL_DIR, 'DLLs', 'libssl-1_1.dll')
     ]
     exe.targetName = 'Xatome.exe'
 
