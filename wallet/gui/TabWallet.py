@@ -119,9 +119,10 @@ class WalletTab(TabFrame):
         return True
 
     def __is_valid_amount(self, value: str) -> bool:
-        p = re.compile(r'^\d+([.,]\d+)?$')
+        # p = re.compile(r'^\d+([.,]\d+)?$')
+        p = re.compile(r'^\d$')
         if p.match(value):
-            return True
+            return int(value) > 0
         return False
 
     def __has_enounght(self, value: int) -> bool:
@@ -130,6 +131,6 @@ class WalletTab(TabFrame):
     def __is_valid_public_key(self, value: str) -> bool:
         try:
             to_pub_key = RSA.import_key(value).export_key('DER')
-            return to_pub_key == self.__key_object.publickey().export_key('DER')
+            return to_pub_key != self.__key_object.publickey().export_key('DER')
         except Exception:
             return False
