@@ -15,7 +15,6 @@ class Logger(ttk.Frame):
         self.__loggerText.tag_config("success", foreground="green")
         self.__loggerText.tag_config("warning", foreground="orange")
         self.__loggerText.tag_config("error", foreground="red")
-        # self.grid(row=9, column=0, columnspan=3, sticky=N + S + E + W)
 
     def __common_log(self, log: str, color: str):
         self.__loggerText.config(state=NORMAL)
