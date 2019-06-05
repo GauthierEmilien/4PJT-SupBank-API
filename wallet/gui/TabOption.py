@@ -10,7 +10,7 @@ from tkinter import ttk
 from gui.TabFrame import TabFrame
 
 
-class OptionTab(TabFrame):
+class TabOption(TabFrame):
     """
     Création du tab "Portefeuille"
     """
@@ -18,6 +18,7 @@ class OptionTab(TabFrame):
     def __init__(self, parent, **args):
         TabFrame.__init__(self, parent.tab_control, **args)
         self.parent = parent
+        self.currrent_theme = 'arc'
         self.__ip_server_ip = ttk.Entry(self, width=15, justify=CENTER, validate='all',
                                         validatecommand=(self.register(self.__is_valid_key_ip), '%S'))
         self.__ip_server_ip_group()
@@ -81,10 +82,12 @@ class OptionTab(TabFrame):
         radio_button_nuit.grid(row=4, column=1, sticky=NSEW)
 
     def set_theme_jour(self):
+        self.currrent_theme = 'arc'
         self.parent.style.set_theme('arc')
         self.__set_text_widget_theme(self.parent.winfo_children(), background='white', foreground='grey')
 
     def set_theme_nuit(self):
+        self.currrent_theme = 'equilux'
         self.parent.style.set_theme('equilux')
         self.__set_text_widget_theme(self.parent.winfo_children(), background='#464646', foreground='#9a9a9a')
 
@@ -94,3 +97,9 @@ class OptionTab(TabFrame):
                 self.__set_text_widget_theme(child.winfo_children(), **args)
             if child.widgetName == 'text':
                 child.configure({**args})
+
+    def udtade_theme(self):
+        if self.currrent_theme == 'equilux':
+            self.set_theme_nuit()
+        else:
+            self.set_theme_jour()

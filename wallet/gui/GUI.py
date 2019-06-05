@@ -9,7 +9,7 @@ from ttkthemes import ThemedStyle
 
 from gui.ClickActions import ClickActions
 from gui.TabBlockchain import BlockchainTab
-from gui.TabOption import OptionTab
+from gui.TabOption import TabOption
 from gui.TabWallet import WalletTab
 from gui.ask.AskIp import AskIp
 from gui.ask.AskPrivateKey import AskPrivateKey
@@ -29,7 +29,13 @@ class GUI(Tk):
         self.title('XatomeCoin')
         # self.protocol("WM_DELETE_WINDOW", self.on_closing)
         try:
-            self.iconbitmap(r'./ressources/Ph03nyx-Super-Mario-Question-Coin.ico')
+            windowSystem = self.tk.call("tk", "windowingsystem")
+            iconName = './ressources/XatomeCoinLogo'
+            if windowSystem == "win32":  # Windows
+                iconName += ".ico"
+            elif windowSystem == "x11":  # Unix
+                iconName = "@" + iconName + ".xbm"
+            self.iconbitmap(iconName)
         except TclError:
             print('Impossible de charger l\'icône')
 
@@ -46,7 +52,7 @@ class GUI(Tk):
         self.tab_control.add(self.tab_wallet, text='Portefeuille')
 
         # Options
-        self.tab_option = OptionTab(self)
+        self.tab_option = TabOption(self)
         self.tab_option.set_theme_jour()
 
         self.tab_control.add(self.tab_option, text='Options')
@@ -118,3 +124,4 @@ class GUI(Tk):
         self.tab_wallet.set_wallet_amount()
         pending_transactions = self.server.get_pending_transactions()
         self.tab_blockchain.set_pending_transactions(pending_transactions)
+        self.tab_option.udtade_theme()

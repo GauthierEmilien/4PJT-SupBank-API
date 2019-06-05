@@ -38,13 +38,13 @@ class BlockchainTab(TabFrame):
 
     def __button_start_mining_action(self):
         self.master.master.server.start_mining()
-        self.__buttonStartMining.grid()
-        self.__buttonStopMining.grid_remove()
+        self.__buttonStartMining.grid_remove()
+        self.__buttonStopMining.grid()
 
     def __button_stop_mining_action(self):
         self.master.master.server.stop_mining()
-        self.__buttonStopMining.grid()
-        self.__buttonStartMining.grid_remove()
+        self.__buttonStopMining.grid_remove()
+        self.__buttonStartMining.grid()
 
     def pending_transactions(self):
         self.__transactions_frame = TransactionFrame(self)

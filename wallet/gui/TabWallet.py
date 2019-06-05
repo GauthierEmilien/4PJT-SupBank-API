@@ -1,3 +1,4 @@
+import re
 from tkinter import CENTER
 from tkinter import DISABLED
 from tkinter import END
@@ -28,11 +29,9 @@ class WalletTab(TabFrame):
         self.__public_key_destinataire = Text(self, height=5)
         self.init_logger()
 
-        # self.privateKeyGroup()
         self.pulic_key_of_user_group()
 
         self.pulic_key_target_group()
-        # self.generateKeys()
         self.__wallet_amount()
         self.transaction_amount()
         self.transaction_button()
@@ -90,9 +89,15 @@ class WalletTab(TabFrame):
                 entry_field.insert(INSERT, value)
 
     def __create_transaction(self, private_key: Text, public_key: Text, amount: Entry):
-        self.logger.log('Création de la transaction')
-        self.master.master.server.make_transaction(self.__key_object, public_key.get('1.0', END), int(amount.get()))
-        self.set_wallet_amount()
+        str_public_key = public_key.get('1.0', END)
+        str_amount = amount.get()
+
+        if self.__is_valid_transaction(str_public_key, str_amount):
+            self.logger.log('Création de la transaction')
+            self.master.master.server.make_transaction(self.__key_object, str_public_key, int(str_amount))
+            self.set_wallet_amount()
+        else:
+            self.logger.error('Impossible de valider la transaction, champs invalides')
 
     def set_key_object(self, private_key: str):
         self.__key_object = RSA.import_key(private_key)
@@ -103,3 +108,26 @@ class WalletTab(TabFrame):
 
     def get_key_object(self) -> RSA.RsaKey:
         return self.__key_object
+
+    def __is_valid_transaction(self, public_key: str, amount: str) -> bool:
+        return self.__is_valid_amount(amount) and self.__is_valid_public_key(public_key) and self.__has_enounght(
+            int(amount))
+
+    def __is_valid_amount(self, value: str) -> bool:
+        p = re.compile(r'\d+([.,]\d+)?')
+        if p.match(value):
+            return True
+        return False
+
+    def __has_enounght(self, value: int) -> bool:
+        return value <= self.amount_wallet['text']
+
+    def __is_valid_public_key(self, value: str) -> bool:
+        try:
+            to_pub_key = RSA.import_key(value).export_key('DER')
+            if to_pub_key == self.__key_object.publickey().export_key('DER'):
+                self.logger.error('Vous ne pouvez pas créer de transaction pour vous-même')
+                return False
+            return True
+        except Exception:
+            return False

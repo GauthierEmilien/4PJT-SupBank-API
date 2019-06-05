@@ -100,9 +100,8 @@ class Server:
         return flask.jsonify(self.__blockchain.__dict__())
 
     def make_transaction(self, key_from: RSA.RsaKey, key_to: str, amount: int):
-        print('key_to', bytes(key_to, 'utf-8'))
         transaction = Transaction(str(datetime.now()), key_from.publickey().export_key('DER'),
-                                  bytes(key_to, 'utf-8'), amount)
+                                  RSA.import_key(key_to).export_key('DER'), amount)
         transaction.sign(key_from)
 
         Client.send_to_every_nodes(self.__host, 'transaction', transaction.__dict__())

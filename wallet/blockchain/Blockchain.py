@@ -65,17 +65,17 @@ class Blockchain:  # Add Thread inheritance for multithreading
                 # dont check the first block
                 continue
             for transaction in block.get_transactions():
-                balance += self.__get_balance_from_transactions(transaction, wallet_address)
+                balance = self.__get_balance_from_transactions(balance, transaction, wallet_address)
         for transaction in self.__pending_transaction:
-            balance += self.__get_balance_from_transactions(transaction, wallet_address)
+            balance = self.__get_balance_from_transactions(balance, transaction, wallet_address)
         return balance
 
-    def __get_balance_from_transactions(self, transaction, wallet_address) -> int:
+    def __get_balance_from_transactions(self, balance, transaction, wallet_address) -> int:
         if transaction.get_from_wallet() == wallet_address:
-            return -transaction.get_amount()
+            balance -= transaction.get_amount()
         if transaction.get_to_wallet() == wallet_address:
-            return transaction.get_amount()
-        return 0
+            balance += transaction.get_amount()
+        return balance
 
     def get_pending_transaction(self) -> List[Transaction]:
         return self.__pending_transaction
