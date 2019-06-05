@@ -5,3 +5,4 @@ requests
 pymongo
 ttkthemes
 flask
+git+https://github.com/anthony-tuininga/cx_Freeze.git@master#egg=cx_Freeze
