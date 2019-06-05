@@ -65,7 +65,7 @@ class Server:
                 private_key = self.__parent.tab_wallet.get_key_object()
                 self.__mining_thread = Mining(self.__blockchain, private_key, self.__host,
                                               self.__parent)
-                self.__parent.update()
+        self.__parent.update()
 
     def __on_blockchain(self, sid):
         print('SEND BLOCKCHAIN TO => {}'.format(sid))
