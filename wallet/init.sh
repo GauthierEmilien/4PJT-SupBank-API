@@ -8,4 +8,4 @@ echo "Installation des packages XatomeCoin..."
 pip install -r requirement.txt > /dev/null
 echo "Installation terminee"
 chmod +x ./Xatome.sh
-echo "Pour lancer le projet, lancer la commande ./Xatome"
+echo "Pour lancer le projet, lancer la commande ./Xatome.sh"
