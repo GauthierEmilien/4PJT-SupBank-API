@@ -115,6 +115,7 @@ class GUI(Tk):
             while len(Client.nodes_info) == 0:
                 continue
 
+        self.tab_blockchain.logger.success('Mon IP de connexion : ' + self.client_server_ip.get_node_ip())
         self.server = Server(self, node_ip.result(), 8000)
 
         t = Thread(target=self.server.start, daemon=True)
